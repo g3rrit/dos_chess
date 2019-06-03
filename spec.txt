@@ -1,0 +1,59 @@
+-------------------------------------
+Board
+The chess board is encoded as 8 x 8
+nibble = 32 byte where a nibble describes the
+piece at that location
+
++ - - - - - - - - +
+| 0             7 |
+| 8             15|
+| 16            23|
+| 24            31|
+| 32            39|
+| 40            47|
+| 48            55|
+| 56            63|
++ - - - - - - - - +
+
+-------------------------------------
+Position
+A position is encoded as a byte
+ranging from 0 - 63
+
+-------------------------------------
+Piece
+The pieces are encoded as a follows
+
+0000 - Empty
+
+0001 - Pawn (w)
+0010 - Knight (w)
+0011 - Bishop (w)
+0100 - Rook (w)
+0101 - Queen (w)
+0110 - King (w)
+
+1001 - Pawn (b)
+1010 - Knight (b)
+1011 - Bishop (b)
+1100 - Rook (b)
+1101 - Queen (b)
+1110 - King (b)
+
+-------------------------------------
+Move
+A move is encoded as a 16bit dword
+The first byte represents the starting position
+and the second the destination
+
+-------------------------------------
+Turn
+The turn is encoded as a byte
+0 - Player1
+1 - Player2 (KI)
+
+-------------------------------------
+Other
+There is no remi
+There is no rocade
+There is no exchanging pieces when reaching the other side

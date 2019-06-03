@@ -11,7 +11,17 @@ include src\util.asm
 main:
   set_video_mode
 
-  set_px 10, 10, 42
+  mov ax, vram
+  mov es, ax
+  draw_px 10, 10, 42
+
+  push 10
+  push 15
+  push 3
+  push 3
+  push 49
+  push 100
+  call draw_filled_rect
 
   ;; loop till esc
 inputl:
