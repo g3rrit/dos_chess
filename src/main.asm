@@ -1,12 +1,17 @@
-.model huge
+.model small
 .386
+
+.stack 100h
 
 .data
 
 .code
 
-include src\gfxutil.asm
-include src\util.asm
+include src/gfxutil.asm
+include src/util.asm
+
+extrn draw_rect:proc
+extrn draw_filled_rect:proc
 
 main:
   set_video_mode
@@ -35,6 +40,5 @@ inputl:
   reset_video_mode
   exit_to_dos
 
-.stack 100h
 
 end main

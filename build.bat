@@ -2,4 +2,5 @@ rmdir build
 mkdir build
 
 tasm.exe src\main.asm build
-tlink.exe build\main.obj
+tasm.exe src\render.asm build
+tlink.exe build\main.obj build\render.obj
