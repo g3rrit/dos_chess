@@ -1,4 +1,21 @@
 -------------------------------------
+Screen
+The screen is 320 x 200
+and the chessboard is in the middle as 160 x 160
+
+                       360
++-----+-------------------+
+|     | 20                | 200
+| 80  |          160      |
+|-----+-------------+     |
+|     |             | 160 |
+|     |             |     |
+|     |             |     |
+|     +-------------+     |
+|                         |
++-------------------------+
+
+-------------------------------------
 Board
 The chess board is encoded as 8 x 8
 nibble = 32 byte where a nibble describes the

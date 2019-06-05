@@ -14,11 +14,23 @@ public draw_filled_rect
 
 locals l_
 
+
+  ;; draws the chessboard
+draw_board proc near
+  enter 0, 0
+
+  mov ax, vram
+
+
+  leave
+  ret
+endp
+
   ;; draws a rectangle at x y with color c
   ;; args:
   ;; x | y | w | h | c
   ;; uses : { ax, bx, cx, di, es }
-draw_rect proc far
+draw_rect proc near
   enter 0 ,0
 
   mov ax, vram
@@ -64,7 +76,7 @@ endp
   ;; border color cb
   ;; args:
   ;; x | y | w | h | c | cb
-draw_filled_rect proc far
+draw_filled_rect proc near
   enter 0, 0
 
   mov ax, vram
@@ -104,6 +116,5 @@ l_draw_v:
   leave
   ret
 endp
-
 
 end
