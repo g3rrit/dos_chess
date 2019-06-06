@@ -1,18 +1,19 @@
-.model small
-.386
+  .model small
+  .386
 
-.stack 100h
+  .stack 100h
 
-.data
+  .data
 
-.code
+  .code
 
-include src\gfxutil.asm
+  include src\util.asm
+  include src\gfxutil.asm
 
-public draw_rect
-public draw_filled_rect
+  public draw_rect
+  public draw_filled_rect
 
-locals l_
+  locals l_
 
 
   ;; draws the chessboard
@@ -24,35 +25,41 @@ draw_board proc near
 
   leave
   ret
-endp
+
+  endp
 
   ;; draws a rectangle at x y with color c
   ;; args:
   ;; x | y | w | h | c
   ;; uses : { ax, bx, cx, di, es }
 draw_rect proc near
+x = [bp + 4 + 8]
+y = [bp + 4 + 6]
+w = [bp + 4 + 4]
+h = [bp + 4 + 2]
+c = [bp + 4]
   enter 0 ,0
 
   mov ax, vram
   mov es, ax
 
   ;; move to left top corner
-  mov ax, [bp + 4 + 6]          ; y -> ax
+  mov ax, y
   mov bx, 320
   mul bx
   mov di, ax
-  add di, [bp + 4 + 8]          ; x + di
-  mov al, [bp + 4]              ; c -> al
-  mov cx, [bp + 4 + 4]          ; w -> cx
+  add di, x
+  mov al, c
+  mov cx, w
   dec cx
 
   cld
   rep
   stosb
 
-  mov cx, [bp + 4 + 4]          ; w -> cx
+  mov cx, w
   dec cx
-  mov bx, [bp + 4 + 2]          ; h -> bx
+  mov bx, h
 l_draw_v:
   mov es:[di], al
   sub di, cx
@@ -70,27 +77,34 @@ l_draw_v:
 
   leave
   ret
-endp
+
+  endp
 
   ;; draws filled rectangle at x y with color c and
   ;; border color cb
   ;; args:
   ;; x | y | w | h | c | cb
 draw_filled_rect proc near
+x = [bp + 4 + 10]
+y = [bp + 4 + 8]
+w = [bp + 4 + 6]
+h = [bp + 4 + 4]
+c = [bp + 4 + 2]
+cb = [bp + 4]
   enter 0, 0
 
   mov ax, vram
   mov es, ax
 
   ;; move to left top corner
-  mov ax, [bp + 4 + 8]          ; y -> ax
+  mov ax, y
   mov bx, 320
   mul bx
   mov di, ax
-  add di, [bp + 4 + 10]         ; x + di
-  mov al, [bp + 4 + 2]          ; c -> al
-  mov bx, [bp + 4 + 4]          ; h -> bx
-  mov cx, [bp + 4 + 6]          ; w -> cx
+  add di, x
+  mov al, c
+  mov bx, h
+  mov cx, w
   dec cx
 
 l_draw_v:
@@ -99,22 +113,24 @@ l_draw_v:
   stosb
 
   add di, 320
-  mov cx, [bp + 4 + 6]          ; w -> cx
+  mov cx, w
   dec cx
   sub di, cx
   dec bx
   jnz l_draw_v
 
-  push word ptr [bp + 4 + 10]
-  push word ptr [bp + 4 + 8]
-  push word ptr [bp + 4 + 6]
-  push word ptr [bp + 4 + 4]
-  push word ptr [bp + 4]
+  push word ptr x
+  push word ptr y
+  push word ptr w
+  push word ptr h
+  push word ptr cb
 
   call draw_rect
+  pop_args 5
 
   leave
   ret
-endp
 
-end
+  endp
+
+  end

@@ -74,3 +74,8 @@ Other
 There is no remi
 There is no rocade
 There is no exchanging pieces when reaching the other side
+
+-------------------------------------
+Pice Bitmap
+The bitmap for a piece is encoded as a
+8 x 8 = 64 byte matrix
