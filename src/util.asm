@@ -30,6 +30,10 @@ disable_cursor macro
 
   ;; returns to dos
 exit_to_dos macro
+  ;; restore text mode
+  mov ax, 3
+  int 10h
+
   mov ah, 4ch
   int 21h
   endm

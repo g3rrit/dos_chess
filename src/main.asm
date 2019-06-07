@@ -12,9 +12,18 @@
 
   extrn draw_rect:proc
   extrn draw_filled_rect:proc
+  extrn error:proc
+  extrn read_bmp:proc
 
 main:
   set_video_mode
+
+  call read_bmp
+  mov ah, 4ch
+  int 21h
+
+  mov ax, 1
+  call error
 
   mov ax, vram
   mov es, ax
@@ -37,9 +46,6 @@ inputl:
   cmp al, esc_char
   jne inputl
 
-
-  reset_video_mode
   exit_to_dos
-
 
   end main

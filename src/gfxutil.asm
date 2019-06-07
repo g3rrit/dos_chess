@@ -14,7 +14,7 @@ endm
 
   ;; resets video mode
   ;; uses { ax }
-reset_video_mode macro
+set_txt_mode macro
   mov ax, 3
   int 10h
 endm
