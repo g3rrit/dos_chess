@@ -18,7 +18,6 @@ fpath db "test.txt$", 0
 
   ;; reads and prints contents of a file
 read_bmp proc near
-  enter 0, 0
 
   mov ax, @data
   mov ds, ax
@@ -29,15 +28,10 @@ read_bmp proc near
   call read_file
   add sp, 6
 
-  ;; eof
-  mov bx, dx
-  mov [bx], 24h
-
   ;; print content of file
   mov ax, offset buffer
   call print
 
-  leave
   ret
   endp
 
@@ -69,13 +63,13 @@ fhandle = [bp]
   mov fhandle, ax
 
   mov dx, buf                   ; desination
+  mov cx, 1                     ; 1 byte
+  mov bx, fhandle
 l_read_byte:
   cmp len, 0
   je l_cleanup
   ;; read from file
   mov ah, 3fh
-  mov cx, 1                     ; 1 byte
-  mov bx, fhandle
   int 21h
   jc l_read_err
 
