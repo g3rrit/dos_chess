@@ -7,8 +7,7 @@
 
   .code
 
-  include src\util.asm
-  include src\gfxutil.asm
+  include mutil.asm
 
   public draw_rect
   public draw_filled_rect

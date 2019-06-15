@@ -5,7 +5,7 @@
 
   .code
 
-  include src\gfxutil.asm
+  include mutil.asm
 
   public print
 

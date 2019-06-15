@@ -7,8 +7,7 @@
 
   .code
 
-  include src/gfxutil.asm
-  include src/util.asm
+  include mutil.asm
 
   extrn draw_rect:proc
   extrn draw_filled_rect:proc
