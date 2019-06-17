@@ -1,5 +1,9 @@
-.model small
-.386
+  include std.asm
+
+  public error
+
+  extrn txt_mode_flag
+  extrn exitp:proc
 
 .data
 
@@ -11,17 +15,12 @@ err_table dw undefined_err, file_open_err, file_read_err
 
 .code
 
-  public error
 
-  ;; prints_error and exits to dos
-  ;; error message should be in ax
-  ;; uses { ax, bx, ds, dx }
+;;; prints_error and exits to dos
+;;; error message should be in ax
+;;; uses { ax, bx, ds, dx }
 error proc near
-  mov ax, bx
-
-  mov ax, @data
-  mov ds, ax
-
+  mov bx, ax
   ;; set text mode
   mov ax, 3
   int 10h
@@ -35,10 +34,11 @@ error proc near
   mov ah, 09h
   int 21h
 
-  ;; return to dos
-  mov ah, 4ch
-  int 21h
+  set_txt_mode
+  mov al, 1
+  mov [byte ptr txt_mode_flag], al
 
+  call exitp
   endp
 
   end

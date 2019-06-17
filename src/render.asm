@@ -1,17 +1,11 @@
-  .model small
-  .386
-
-  .data
-
-  .code
-
-  include mutil.asm
+  include std.asm
 
   public draw_rect
   public draw_filled_rect
 
-  locals l_
+  .data
 
+  .code
 
   ;; draws the chessboard
 draw_board proc near
@@ -57,7 +51,7 @@ c = [bp + 4]
   mov cx, w
   dec cx
   mov bx, h
-l_draw_v:
+@@draw_v:
   mov es:[di], al
   sub di, cx
   mov es:[di], al
@@ -65,7 +59,7 @@ l_draw_v:
   add di, 320
 
   dec bx
-  jnz l_draw_v
+  jnz @@draw_v
 
   sub di, 320
   std
@@ -104,7 +98,7 @@ cb = [bp + 4]
   mov cx, w
   dec cx
 
-l_draw_v:
+@@draw_v:
   cld
   rep
   stosb
@@ -114,7 +108,7 @@ l_draw_v:
   dec cx
   sub di, cx
   dec bx
-  jnz l_draw_v
+  jnz @@draw_v
 
   push word ptr x
   push word ptr y

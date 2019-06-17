@@ -1,13 +1,10 @@
-  .model small
-  .386
+  include std.asm
+
+  public print
 
   .data
 
   .code
-
-  include mutil.asm
-
-  public print
 
   ;; address of printable string in ax
   ;; string needs to end with $
