@@ -1,8 +1,6 @@
   .model small
   .386
 
-  .stack 100h
-
   .data
 
   .code
