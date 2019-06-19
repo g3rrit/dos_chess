@@ -26,12 +26,12 @@ pop_args macro count
 
 ;;; gets the n-th argument
 get_arg macro n
-  [bp + 6 + 2 * n]
+  [bp + 6 + n]
   endm
 
 ;;; gets the n-th variable
 get_var macro n
-  [bp - 2 + n]
+  [bp - n]
   endm
 
 ;;; builds a stack frame with n
@@ -39,7 +39,7 @@ get_var macro n
 entr macro n
   push bp
   mov bp, sp
-  sub sp, n * 2
+  sub sp, n
   endm
 
 leav macro

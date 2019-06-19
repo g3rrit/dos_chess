@@ -8,10 +8,11 @@
 .data
 
 undefined_err db "undefined error$"
+file_err      db "file io error$"
 file_open_err db "error opening file$"
 file_read_err db "error reading from file$"
 
-err_table dw undefined_err, file_open_err, file_read_err
+err_table dw undefined_err, file_err, file_open_err, file_read_err
 
 .code
 
