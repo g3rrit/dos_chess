@@ -3,10 +3,12 @@
   public txt_mode_flag
   public exitp
 
-  extrn draw_rect:pro1c
+  extrn draw_rect:proc
   extrn draw_filled_rect:proc
   extrn error:proc
   extrn read_bmp:proc
+  extrn tileset_load:proc
+  extrn tileset_draw:proc
 
   .data
 
@@ -30,6 +32,9 @@ initp proc near
   ;; this shouldnt change
   mov ax, vram
   mov es, ax
+
+  ;; load tileset
+  call tileset_load
 
   ret
   endp
@@ -55,8 +60,9 @@ exitp proc near
 main:
   call initp
 
-  mov ax, 1
-  call error
+  push_args <10, 10, 16, 16, 16, 16>
+  call tileset_draw
+  pop_args
 
   ;; mov ax, vram
   ;; mov es, ax

@@ -26,12 +26,12 @@ pop_args macro count
 
 ;;; gets the n-th argument
 get_arg macro n
-  [bp + 6 + n]
+  bp + 6 + n
   endm
 
 ;;; gets the n-th variable
 get_var macro n
-  [bp - n]
+  bp - n
   endm
 
 ;;; builds a stack frame with n
@@ -40,9 +40,14 @@ entr macro n
   push bp
   mov bp, sp
   sub sp, n
+  push ax bx cx dx
   endm
 
 leav macro
+  pop dx
+  pop cx
+  pop bx
+  pop ax
   mov sp, bp
   pop bp
   endm
@@ -92,6 +97,10 @@ exit_to_dos macro
 ;;;---------------------------------------
 
 vram = 0a000h
+
+screen_width = 320
+screen_height = 200
+screen_size = screen_width * screen_height
 
 ;;; set video mode to 320 x 200 256 colors vga
 ;;; uses { es, ax }

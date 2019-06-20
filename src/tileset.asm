@@ -1,8 +1,18 @@
-  include "util.asm"
+  include std.asm
 
   public tileset_load
+  public tileset_draw
 
   extrn error:proc
+
+  .data
+
+tileset_width = 96
+tileset_height = 128
+tileset_size = tileset_width * tileset_height
+
+tileset_path db "res\tileset.bmp", 0
+tileset_buffer db tileset_size dup (0)
 
 bmp_header_t struc
   sig dw 0
@@ -23,34 +33,114 @@ bmp_header_t struc
   clrimportant dd 0
   ends
 
-  .data
-
 bmp_header bmp_header_t <>
 
-tileset_path db "tileset.bmp", 0
-tileset_buffer dw 20000 dup (0)
+palette db 1024 dup (?)
+
+palette_color dd 0
+
 
   .code
 
-tileset_load proc near
-  entr 8
+;;; draws region of tileset with w h at x y
+;;; to position xp yp on screen
+;;; doesnt draw it region outside
+;;; of tileset is selected
+;;; uses {}
+;;; args: xp yp x y w h
+tileset_draw proc near
+  entr 0
 
-fhandle = get_var 2
-pal_b = get_var 4
-pal_g = get_var 5
-pal_r = get_var 6
-pal_count = get_var 8
+h = bp + 6
+w = bp + 6 + 2
+y = bp + 6 + 4
+x = bp + 6 + 6
+xp = bp + 6 + 8
+yp = bp + 6 + 10
+
+  ;; check if postion in tileset is valid
+  mov ax, word ptr [y]
+  add ax, word ptr [h]
+  mov bx, tileset_width
+  mul ax
+  add ax, word ptr [x]
+  add ax, word ptr [w]
+  cmp ax, tileset_size
+  jg @@invalid_pos
+
+  ;; check if position on screen is valid
+  mov ax, word ptr [yp]
+  add ax, word ptr [h]
+  mov bx, screen_width
+  mul bx
+  add ax, word ptr [xp]
+  add ax, word ptr [w]
+  mov bx, screen_size
+  cmp ax, bx
+  ;; TODO: wtf
+  ;; jg @@invalid_pos
+
+  ;; get starting position for screen
+  mov ax, word ptr [yp]
+  mov bx, screen_width
+  mul bx
+  add ax, word ptr [xp]
+  mov di, ax
+
+  ;; get starting position for tileset
+  mov ax, word ptr [y]
+  mov bx, tileset_width
+  mul bx
+  add ax, word ptr [x]
+  mov bx, ax
+
+  mov cx, word ptr [w]
+  mov dx, word ptr [h]
+
+  ;; draw tile
+@@draw:
+  mov al, byte ptr [tileset_buffer + bx]
+  mov es:[di], al
+  inc di
+  inc bx
+
+  dec cx
+  jz @@draw_width
+  jmp @@draw
+
+@@draw_width:
+  mov cx, word ptr [w]
+  add di, screen_width
+  sub di, cx
+  add bx, tileset_width
+  sub bx, cx
+
+  dec dx
+  jnz @@draw
+  ;; -----
+
+@@invalid_pos:
+  leav
+  ret
+  endp
+
+;;; load the tileset into memory
+tileset_load proc near
+  entr 12
+
+fhandle = bp - 2
+pal_count = bp - 4
+height_count = bp - 6
 
   mov word ptr [pal_count], 0
 
-
   ;; open file for writing
   mov ah, 3dh
-  mov dx, offset fpath
+  mov dx, offset tileset_path
   xor al, al
   xor cx, cx
   int 21h
-  jc ioerr
+  jc @@ioerr
 
   mov word ptr [fhandle], ax
 
@@ -61,63 +151,68 @@ pal_count = get_var 8
   mov cx, 54
   mov dx, offset tileset_buffer
   int 21h
-  jc cleanup_ioerr
+  jc @@cleanup_ioerr
   cmp ax, cx
-  jne cleanup_ioerr
+  jne @@cleanup_ioerr
 
-  xor al, al
+  ;; read color palette color by color
+  xor ax, ax
+  mov dx, 03c8h
+  out dx, al
 
-  ;; set color palette
-  mov dx, 03c8h                 ; RGB write register
-  out dx, al                    ; Set the palette index
-  inc dx                        ; 03C9 RGB data register
-
-  ;; read color palette
-set_pal_l:
-  mov ah, 3fh
+  mov word ptr [pal_count], 0
+  xor ax, ax
+  xor bx, bx
   mov bx, word ptr [fhandle]
+@@set_pal:
+  mov dx, offset palette_color
+  mov ah, 3fh
   mov cx, 4
-  mov dx, bp + 2
   int 21h
-  jc cleanup_ioerr
+  jc @@cleanup_ioerr
   cmp ax, cx
-  jne cleanup_ioerr
+  jne @@cleanup_ioerr
 
-  mov bx, word ptr [pal_count]
-  xor al, al
-
+  mov dx, 03c9h
   mov cl, 2
-  mov al, byte ptr [pal_b]
+
+  mov al, byte ptr [palette_color + 2]
   shr al, cl
   out dx, al                    ; Blue component
-  mov al, byte ptr [pal_g]
+  mov al, byte ptr [palette_color + 1]
   shr al, cl
   out dx, al                    ; Green component
-  mov al, byte ptr [pal_r]
+  mov al, byte ptr [palette_color]
   shr al, cl
   out dx, al                    ; Red component
 
-  add word ptr [pal_count], 4
-  cmp word ptr [pal_count], 1024
-  jne set_pal_l
+  inc word ptr [pal_count]
+  cmp word ptr [pal_count], 256
+  jne @@set_pal
 
   ;; read image to buffer
-  mov ah, 3fh
+  mov word ptr [height_count], tileset_height
   mov bx, word ptr [fhandle]
-  mov cx, 100
   mov dx, offset tileset_buffer
-  xor al, al
+  add dx, tileset_size
+@@read_ts:
+  sub dx, tileset_width
+  mov ah, 3fh
+  mov cx, tileset_width
   int 21h
-  jc cleanup_ioerr
+  jc @@cleanup_ioerr
   cmp ax, cx
-  jne cleanup_ioerr
+  jne @@cleanup_ioerr
 
+  sub word ptr [height_count], 1
+  jnz @@read_ts
 
 @@cleanup:
   mov ah, 3eh
   mov bx, word ptr [fhandle]
   int 21h
 
+  leav
   ret
 
 @@cleanup_ioerr:
@@ -129,3 +224,6 @@ set_pal_l:
   call error
 
   endp
+
+
+  end
