@@ -8,7 +8,7 @@
   extrn error:proc
   extrn read_bmp:proc
   extrn tileset_load:proc
-  extrn tileset_draw:proc
+  extrn tile_draw:proc
 
   .data
 
@@ -60,9 +60,11 @@ exitp proc near
 main:
   call initp
 
-  push_args <10, 10, 16, 16, 16, 16>
-  call tileset_draw
+  push_args <9, 0, 0>
+  call tile_draw
   pop_args
+
+
 
   ;; mov ax, vram
   ;; mov es, ax

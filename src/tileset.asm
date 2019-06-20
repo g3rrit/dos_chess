@@ -1,7 +1,7 @@
   include std.asm
 
   public tileset_load
-  public tileset_draw
+  public tile_draw
 
   extrn error:proc
 
@@ -14,33 +14,63 @@ tileset_size = tileset_width * tileset_height
 tileset_path db "res\tileset.bmp", 0
 tileset_buffer db tileset_size dup (0)
 
-bmp_header_t struc
-  sig dw 0
-  usize dd 0
-  res dd 0
-  imgoffset dd 0
-
-  diheadersize dd 0
-  biwidth dd 0
-  biheight dd 0
-  planes dw 0
-  bitcount dw 0
-  comp dd 0
-  imgsize dd 0
-  xppm dd 0
-  yppm dd 0
-  clrused dd 0
-  clrimportant dd 0
-  ends
-
-bmp_header bmp_header_t <>
-
-palette db 1024 dup (?)
-
 palette_color dd 0
 
+transparent_color = 0fdh
+
+;;; -- TILE_MAP --------------------------
+tile_pawn_w dw 0, 0, 16, 16
+tile_knight_w dw 16, 0, 16, 16
+tile_bishop_w dw 32, 0, 16, 16
+tile_rook_w dw 48, 0, 16, 16
+tile_queen_w dw 64, 0, 16, 16
+tile_king_w dw 80, 0, 16, 16
+
+tile_pawn_b dw 0, 16, 16, 16
+tile_knight_b dw 16, 16, 16, 16
+tile_bishop_b dw 32, 16, 16, 16
+tile_rook_b dw 48, 16, 16, 16
+tile_queen_b dw 64, 16, 16, 16
+tile_king_b dw 80, 16, 16, 16
+
+tile_empty_w dw 0, 17, 20, 20
+tile_empty_b dw 20, 17, 20, 20
+
+tile_map dw tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b
+
+
+;;; --  ----------------------------------
 
   .code
+
+;;; draw the specified tile at position x y
+;;; args t x y
+tile_draw proc near
+  entr 0
+
+y = bp + 6
+x = bp + 6 + 2
+t = bp + 6 + 4
+
+  push word ptr [x]
+  push word ptr [y]
+  mov ax, word ptr [t]
+  mov bx, 2
+  mul bx
+  mov bx, ax
+  mov cx, word ptr [tile_map + bx]
+  mov bx, cx
+  push word ptr [bx]
+  push word ptr [bx + 2]
+  push word ptr [bx + 4]
+  push word ptr [bx + 6]
+  push ax
+  call tileset_draw
+  add sp, 12
+
+  leav
+  ret
+  endp
 
 ;;; draws region of tileset with w h at x y
 ;;; to position xp yp on screen
@@ -55,8 +85,8 @@ h = bp + 6
 w = bp + 6 + 2
 y = bp + 6 + 4
 x = bp + 6 + 6
-xp = bp + 6 + 8
-yp = bp + 6 + 10
+yp = bp + 6 + 8
+xp = bp + 6 + 10
 
   ;; check if postion in tileset is valid
   mov ax, word ptr [y]
@@ -100,7 +130,10 @@ yp = bp + 6 + 10
   ;; draw tile
 @@draw:
   mov al, byte ptr [tileset_buffer + bx]
+  cmp al, transparent_color
+  je @@skip_px
   mov es:[di], al
+@@skip_px:
   inc di
   inc bx
 

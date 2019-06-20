@@ -1,5 +1,7 @@
-.model small
-.486
+  .model small
+  .486
+
+  extrn stack_arg_count
 
 ;;;---------------------------------------
 ;;;   UTIL_FUNCTIONS
@@ -10,18 +12,23 @@ esc_char = 1bh
 
 ;;; pushed args to stack
 push_args macro args
-  xor ax, ax
+  push ax bx cx dx
+  mov word ptr [stack_arg_count], 0
   irp a, <args>
+      add word ptr [stack_arg_count], 2
       push a
-      add ax, 2
   endm
-  push ax
+  push word ptr [stack_arg_count]
   endm
 
 ;;; pops count words from stack
 pop_args macro count
+  pop word ptr [stack_arg_count]
+  add sp, word ptr [stack_arg_count]
+  pop dx
+  pop cx
+  pop bx
   pop ax
-  add sp, ax
   endm
 
 ;;; gets the n-th argument
@@ -40,14 +47,9 @@ entr macro n
   push bp
   mov bp, sp
   sub sp, n
-  push ax bx cx dx
   endm
 
 leav macro
-  pop dx
-  pop cx
-  pop bx
-  pop ax
   mov sp, bp
   pop bp
   endm

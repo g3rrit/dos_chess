@@ -41,21 +41,21 @@ ranging from 0 - 63
 Piece
 The pieces are encoded as a follows
 
-0000 - Empty
+0000 - 0 - Empty
 
-0001 - Pawn (w)
-0010 - Knight (w)
-0011 - Bishop (w)
-0100 - Rook (w)
-0101 - Queen (w)
-0110 - King (w)
+0001 - 1 - Pawn (w)
+0010 - 2 - Knight (w)
+0011 - 3 - Bishop (w)
+0100 - 4 - Rook (w)
+0101 - 5 - Queen (w)
+0110 - 6 - King (w)
 
-1001 - Pawn (b)
-1010 - Knight (b)
-1011 - Bishop (b)
-1100 - Rook (b)
-1101 - Queen (b)
-1110 - King (b)
+1001 - 9 - Pawn (b)
+1010 - a - Knight (b)
+1011 - b - Bishop (b)
+1100 - c - Rook (b)
+1101 - d - Queen (b)
+1110 - e - King (b)
 
 -------------------------------------
 Move
