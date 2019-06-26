@@ -104,6 +104,11 @@ screen_width = 320
 screen_height = 200
 screen_size = screen_width * screen_height
 
+board_width = 160
+board_height = 160
+board_xpos = 20
+board_ypos = 20
+
 ;;; set video mode to 320 x 200 256 colors vga
 ;;; uses { es, ax }
 set_video_mode macro

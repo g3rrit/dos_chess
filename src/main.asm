@@ -9,6 +9,7 @@
   extrn read_bmp:proc
   extrn tileset_load:proc
   extrn tile_draw:proc
+  extrn draw_board:proc
 
   .data
 
@@ -60,11 +61,11 @@ exitp proc near
 main:
   call initp
 
-  push_args <9, 0, 0>
-  call tile_draw
-  pop_args
+  ;; push_args <6, 0, 0>
+  ;; call tile_draw
+  ;; pop_args
 
-
+  call draw_board
 
   ;; mov ax, vram
   ;; mov es, ax

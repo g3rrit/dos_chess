@@ -2,6 +2,7 @@
 
   public draw_rect
   public draw_filled_rect
+  public draw_board
 
   extrn board
   extrn tile_draw:proc
@@ -10,10 +11,52 @@
 
   .code
 
+switch_color macro
+  local nblack, conn
+  ;; set white or black
+  cmp bx, 13
+  jne nblack
+  ;; else
+  mov bx, 12
+  jmp conn
+nblack:
+  mov bx, 13
+conn:
+  endm
+
   ;; draws the chessboard
 draw_board proc near
-
   entr 0
+
+  ;; draw board
+  mov cx, 80
+  mov dx, 20
+
+  mov bx, 13
+@@draw_square:
+  push_args <bx, cx, dx>
+  call tile_draw
+  pop_args
+
+  switch_color
+
+  add cx, 20
+  cmp cx, 80 + 20 * 8
+  je @@next_line
+  jmp @@draw_square
+
+@@next_line:
+  mov cx, 80
+  add dx, 20
+
+  switch_color
+
+  cmp dx, 20 + 20 * 8
+  jne @@draw_square
+
+  ;; --------
+
+@@draw_pieces:
 
   leav
   ret
@@ -22,8 +65,8 @@ draw_board proc near
 ;;; --   DRAW_PIECE_PROC -----------------
 ;;; converts a position in to form from 0 - 63
 ;;; to a representation in x y coordinates
-convert_pos_to_coord macro pos
-  mov
+convert_pos_to_coord macro
+
 
   endm
 

@@ -33,8 +33,8 @@ tile_rook_b dw 48, 16, 16, 16
 tile_queen_b dw 64, 16, 16, 16
 tile_king_b dw 80, 16, 16, 16
 
-tile_empty_w dw 0, 17, 20, 20
-tile_empty_b dw 20, 17, 20, 20
+tile_empty_w dw 0, 32, 20, 20
+tile_empty_b dw 20, 32, 20, 20
 
 tile_map dw tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b
 
@@ -66,7 +66,6 @@ t = bp + 6 + 4
   push word ptr [bx + 6]
   push ax
   call tileset_draw
-  add sp, 12
 
   leav
   ret
