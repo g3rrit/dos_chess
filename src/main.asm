@@ -10,6 +10,9 @@
   extrn tileset_load:proc
   extrn tile_draw:proc
   extrn draw_board:proc
+  extrn init_board:proc
+
+  extrn piece_at:proc
 
   .data
 
@@ -36,6 +39,9 @@ initp proc near
 
   ;; load tileset
   call tileset_load
+
+  ;; initialize board
+  call init_board
 
   ret
   endp

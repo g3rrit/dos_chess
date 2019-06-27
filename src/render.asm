@@ -6,6 +6,7 @@
 
   extrn board
   extrn tile_draw:proc
+  extrn board_for_each:proc
 
   .data
 
@@ -14,13 +15,13 @@
 switch_color macro
   local nblack, conn
   ;; set white or black
-  cmp bx, 13
+  cmp bx, 8
   jne nblack
   ;; else
-  mov bx, 12
+  mov bx, 7
   jmp conn
 nblack:
-  mov bx, 13
+  mov bx, 8
 conn:
   endm
 
@@ -32,7 +33,7 @@ draw_board proc near
   mov cx, 80
   mov dx, 20
 
-  mov bx, 13
+  mov bx, 8
 @@draw_square:
   push_args <bx, cx, dx>
   call tile_draw
@@ -58,28 +59,53 @@ draw_board proc near
 
 @@draw_pieces:
 
+  push_args <offset draw_pieces>
+  call board_for_each
+  pop_args
+
   leav
   ret
   endp
 
 ;;; --   DRAW_PIECE_PROC -----------------
-;;; converts a position in to form from 0 - 63
-;;; to a representation in x y coordinates
-convert_pos_to_coord macro
 
+;;; args:
+;;;  - piece x y
+draw_pieces proc near
+  entr 0
 
-  endm
+piece = bp + 6 + 4
+xpos = bp + 6 + 2
+ypos = bp + 6
 
-draw_empty proc near
+  cmp word ptr [piece], 0
+  je @@empty
 
+  mov cx, word ptr [xpos]
 
-  ret
-  endp
+  mov ax, cx
+  mov cx, 20
+  mul cx
+  mov cx, ax
+  add cx, 82
 
-draw_piece proc near
+  mov dx, word ptr [ypos]
 
-  push_args <offset draw_empty>
+  mov ax, dx
+  mov dx, 20
+  mul dx
+  mov dx, ax
+  add dx, 22
 
+  mov ax, word ptr [piece]
+
+  push_args <ax, cx, dx>
+  call tile_draw
+  pop_args
+
+@@empty:
+
+  leav
   ret
   endp
 

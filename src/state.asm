@@ -1,6 +1,8 @@
   include std.asm
 
   public init_board
+  public board_for_each
+  public piece_at
 
   .data
 
@@ -43,8 +45,8 @@
 init_board proc near
   entr 0
 
-  mov word ptr [board],     0cabdh
-  mov word ptr [board + 2], 0ebach
+  mov word ptr [board],     0bdcah
+  mov word ptr [board + 2], 0acebh
   mov word ptr [board + 4], 09999h
   mov word ptr [board + 6], 09999h
 
@@ -59,49 +61,42 @@ init_board proc near
 
   mov word ptr [board + 24], 01111h
   mov word ptr [board + 26], 01111h
-  mov word ptr [board + 28], 04235h
-  mov word ptr [board + 30], 06324h
+  mov word ptr [board + 28], 03542h
+  mov word ptr [board + 30], 02463h
 
   leav
   ret
   endp
 
-;;; executes procudure for each location on board
-;;; proc get piece in al and location in bx
-;;; args:
-;;;     pe ppw pknw pbw prw pqw pkw
-;;;     ppb pknb pbb prb pqb pkb
-board_for_each proc near
+;;; retrieves piece at location x y
+;;;  args:
+;;;     x y
+;;;  returns:
+;;;     ax: piece
+piece_at proc near
   entr 0
 
-pe   = bp + 6 + 24
-ppw  = bp + 6 + 22
-pknw = bp + 6 + 20
-pbw  = bp + 6 + 18
-prw  = bp + 6 + 16
-pqw  = bp + 6 + 14
-pkw  = bp + 6 + 12
-ppb  = bp + 6 + 10
-pknb = bp + 6 + 8
-pbb  = bp + 6 + 6
-prb  = bp + 6 + 4
-pqb  = bp + 6 + 2
-pkb  = bp + 6
+xpos = bp + 6 + 2
+ypos = bp + 6
 
-  xor ax, ax
-  xor bx, bx
+  cmp word ptr [xpos], 8
+  jg @@invalid_pos
+  cmp word ptr [ypos], 8
+  jg @@invalid_pos
 
-@@nibble_l:
+  mov ax, 8
+  mov bx, word ptr [ypos]
+  mul bx
+  mov cx, 1
+  add ax, word ptr [xpos]
+  shr ax, cl
+
+  mov bx, ax
   mov al, byte ptr [board + bx]
-  mov ch, ah
-  and ch, 1
-  jnz @@for_nibble
-  jz @@next_byte
 
-  jmp @@sh_nibble
+  jnc @@sh_nibble
 
-@@next_byte:
-  inc bx
+  jmp @@for_nibble
 
 @@sh_nibble:
   mov cl, 4
@@ -109,91 +104,55 @@ pkb  = bp + 6
 
 @@for_nibble:
   and al, 0fh
-  inc ah
 
-  ;; do stuff with piece in al and position in bx
+  xor ah, ah
 
-  push_args <>
+  leav
+  ret
 
-  cmp al, 0
-  je @@empty
+@@invalid_pos:
+  mov ax, 0ffffh
+  leav
+  ret
 
-  cmp al, 1
-  je @@pawn_w
-  cmp al, 2
-  je @@knight_w
-  cmp al, 3
-  je @@bishop_w
-  cmp al, 4
-  je @@rook_w
-  cmp al, 4
-  je @@queen_W
-  cmp al, 4
-  je @@king_w
+  endp
 
-  cmp al, 9
-  je @@pawn_b
-  cmp al, 0ah
-  je @@knight_b
-  cmp al, 0bh
-  je @@bishop_b
-  cmp al, 0ch
-  je @@rook_b
-  cmp al, 0dh
-  je @@queen_b
-  cmp al, 0eh
-  je @@king_b
+;;; executes procudure for each location on board
+;;; proc get location as stack args: piece x y
+;;; args:
+;;;     cb
+board_for_each proc near
+  entr 2
 
-  jmp @@next_p
+piece = bp - 2
 
+cb = bp + 6
 
-@@empty:
-  call [pe]
-  jmp @@next_p
+  xor cx, cx
+  xor dx, dx
 
-@@pawn_w:
-  call [ppw]
-  jmp @@next_p
-@@knight_w:
-  call [pknw]
-  jmp @@next_p
-@@bishop_w:
-  call [pbw]
-  jmp @@next_p
-@@rook_w:
-  call [prw]
-  jmp @@next_p
-@@queen_w:
-  call [pqw]
-  jmp @@next_p
-@@king_w:
-  call [pkw]
-  jmp @@next_p
+@@continue:
 
-@@pawn_b:
-  call [ppb]
-  jmp @@next_p
-@@knight_b:
-  call [pknb]
-  jmp @@next_p
-@@bishop_b:
-  call [pbb]
-  jmp @@next_p
-@@rook_b:
-  call [prb]
-  jmp @@next_p
-@@queen_b:
-  call [pqb]
-  jmp @@next_p
-@@king_b:
-  call [pkb]
+  push_args<cx, dx>
+  call piece_at
+  mov word ptr [piece], ax
+  pop_args
+  mov ax, word ptr [piece]
 
-  ;; -----
-@@next_p:
+  push_args <ax, cx, dx>
+  call word ptr [cb]
   pop_args
 
-  cmp ah, 64
-  jl @@nibble_l
+  inc cx
+
+  cmp cx, 8
+  jne @@continue
+
+  mov cx, 0
+  inc dx
+
+  cmp dx, 8
+  jne @@continue
 
   leav
   ret
