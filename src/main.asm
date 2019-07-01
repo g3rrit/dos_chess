@@ -10,7 +10,8 @@
   extrn tileset_load:proc
   extrn tile_draw:proc
   extrn draw_board:proc
-  extrn init_board:proc
+  extrn board_init:proc
+  extrn board_move:proc
 
   extrn piece_at:proc
 
@@ -41,7 +42,7 @@ initp proc near
   call tileset_load
 
   ;; initialize board
-  call init_board
+  call board_init
 
   ret
   endp
@@ -67,23 +68,30 @@ exitp proc near
 main:
   call initp
 
-  ;; push_args <6, 0, 0>
-  ;; call tile_draw
-  ;; pop_args
+  ;; -- TESTING --
 
   call draw_board
 
-  ;; mov ax, vram
-  ;; mov es, ax
-  ;; draw_px 10, 10, 42
+  mov ah, 0
+  int 16h
 
-  ;; push_args <10, 15, 3, 3, 49, 100>
-  ;; call draw_filled_rect
-  ;; pop_args 6
+  mov ah, 066h
+  mov al, 044h
 
-  ;; push_args <30, 15, 3, 3, 49, 100>
-  ;; call draw_filled_rect
-  ;; pop_args 6
+  push_args <ax>
+  call board_move
+  pop_args
+
+  call draw_board
+
+  mov ah, 0
+  int 16h
+
+  mov ah, 0
+  int 16h
+
+
+  ;; -- TESTING --
 
 
   ;; loop till esc
