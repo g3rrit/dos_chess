@@ -18,6 +18,7 @@
   extrn mouse_board_pos:proc
   extrn piece_at:proc
   extrn board_move:proc
+  extrn draw_board:proc
 
   .data
 
@@ -100,9 +101,11 @@ choosing_state proc near
   call piece_at
   pop_args
 
-  ;; if first bit is set piece is white
-  and ax, 8
+  ;; if first bit is set piece is black
+  cmp ax, 8
   jnc @@done
+  cmp ax, 0
+  je @@done
 
   mov byte ptr [game_state], 2
 
@@ -113,6 +116,7 @@ choosing_state proc near
   mov byte ptr [selected_xpos], al
   mov byte ptr [selected_ypos], bl
 
+  call draw_board
 
 @@done:
   leav
@@ -133,7 +137,7 @@ selected_state proc near
   board_dword_byte
   mov dx, ax
 
-  xor ax
+  xor ax, ax
   mov al, byte ptr [selected_xpos]
   mov bl, byte ptr [selected_ypos]
   board_dword_byte
@@ -148,6 +152,8 @@ selected_state proc near
 
   ;; TODO: change state to ai state
   mov byte ptr [game_state], 1
+
+  call draw_board
 
 @@done:
   leav

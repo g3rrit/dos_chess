@@ -6,6 +6,7 @@
   extrn error:proc
   extrn tileset_load:proc
   extrn board_init:proc
+  extrn draw_board:proc
 
   extrn mouse_init:proc
   extrn mouse_delete:proc
@@ -46,6 +47,9 @@ initp proc near
   ;; initialize board
   call board_init
 
+  ;; draw board
+  call draw_board
+
   ret
   endp
 
@@ -76,12 +80,12 @@ main:
 
   ;; -- TESTING --
 
-  call testp
+  ;; call testp
 
   ;; -- TESTING --
 
   ;; start main loop
-  ;; call main_loop
+  call main_loop
 
 
   ;; exit on keyboard press

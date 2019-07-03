@@ -24,19 +24,19 @@
 ;;;
 ;;; 0000 0000 - 0 - Empty
 ;;;
-;;; 0000 0001 - 1 - Pawn (b)
-;;; 0000 0010 - 2 - Knight (b)
-;;; 0000 0011 - 3 - Bishop (b)
-;;; 0000 0100 - 4 - Rook (b)
-;;; 0000 0101 - 5 - Queen (b)
-;;; 0000 0110 - 6 - King (b)
+;;; 0000 0001 - 1 - Pawn (w)
+;;; 0000 0010 - 2 - Knight (w)
+;;; 0000 0011 - 3 - Bishop (w)
+;;; 0000 0100 - 4 - Rook (w)
+;;; 0000 0101 - 5 - Queen (w)
+;;; 0000 0110 - 6 - King (w)
 ;;;
-;;; 0000 1001 - 9 - Pawn (w)
-;;; 0000 1010 - a - Knight (w)
-;;; 0000 1011 - b - Bishop (w)
-;;; 0000 1100 - c - Rook (w)
-;;; 0000 1101 - d - Queen (w)
-;;; 0000 1110 - e - King (w)
+;;; 0000 1001 - 9 - Pawn (b)
+;;; 0000 1010 - a - Knight (b)
+;;; 0000 1011 - b - Bishop (b)
+;;; 0000 1100 - c - Rook (b)
+;;; 0000 1101 - d - Queen (b)
+;;; 0000 1110 - e - King (b)
 ;;; --  ----------------------------------
 
   board db 64 dup (0)
@@ -61,14 +61,10 @@ board_xy_pos macro
   mov cx, 4
   shr bx, cl
 
-  mov cx, bx
-  mov bx, ax
-  mov ax, cx
-
   ;; multiply by 8 and add xpos
   mov cx, 8
+  and ax, 0fh
   mul cx
-  and bx, 0fh
   add ax, bx
 
   pop cx
