@@ -1,15 +1,15 @@
 rmdir build
 mkdir build
 
-tasm.exe /m2 /iinclude src\main.asm build > build\out.txt
-tasm.exe /m2 /iinclude src\test.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\render.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\error.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\stdio.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\fileio.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\tileset.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\board.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\util.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\state.asm build >> build\out.txt
-tasm.exe /m2 /iinclude src\mouse.asm build >> build\out.txt
-tlink.exe build\main.obj build\test.obj build\render.obj build\error.obj build\stdio.obj build\fileio.obj build\tileset.obj build\board.obj build\state.obj build\mouse.obj build\util.obj >> build\out.txt
+tasm.exe /m2 /iinclude src\* build\ > build\out.txt
+tlib.exe build\mlib -+build\mouse  >> build\out.txt
+tlib.exe build\mlib -+build\test  >> build\out.txt
+tlib.exe build\mlib -+build\render  >> build\out.txt
+tlib.exe build\mlib -+build\error  >> build\out.txt
+tlib.exe build\mlib -+build\stdio  >> build\out.txt
+tlib.exe build\mlib -+build\fileio  >> build\out.txt
+tlib.exe build\mlib -+build\tileset  >> build\out.txt
+tlib.exe build\mlib -+build\board  >> build\out.txt
+tlib.exe build\mlib -+build\state  >> build\out.txt
+tlib.exe build\mlib -+build\util  >> build\out.txt
+tlink.exe build\main.obj build\mlib.lib >> build\out.txt
