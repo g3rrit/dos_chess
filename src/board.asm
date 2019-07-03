@@ -151,31 +151,39 @@ board_init proc near
 
 ;;; retrieves piece at location x y
 ;;;  args:
-;;;     x y
+;;;     xy as lower byte
 ;;;  returns:
 ;;;     ax: piece
 piece_at proc near
   entr 0
 
-xpos = bp + 6 + 1
-ypos = bp + 6
-
-  cmp byte ptr [xpos], 8
-  jg @@invalid_pos
-  cmp byte ptr [ypos], 8
-  jg @@invalid_pos
+pos = bp + 6
 
   xor ax, ax
+  xor bx, bx
 
-  mov al, byte ptr [ypos]
+  ;; x pos in bl
+  mov al, byte ptr [pos]
+  mov cx, 4
+  shr al, cl
+  mov bl, al
+
+  ;; y pos in al
+  mov al, byte ptr [pos]
+  and al, 0fh
+
+  cmp al, 8
+  jge @@invalid_pos
+  cmp bl, 8
+  jge @@invalid_pos
+
   mov cx, 8
   mul cx
-  add al, byte ptr [xpos]
+
+  add al, bl
 
   mov bx, ax
   mov al, byte ptr [board + bx]
-
-  xor ah, ah
 
   leav
   ret
@@ -199,13 +207,24 @@ piece = bp - 2
 
 cb = bp + 6
 
+  xor ax, ax
+  xor bx, bx
   xor cx, cx
   xor dx, dx
 
 @@continue:
 
-  mov ah, cl
-  mov al, dl
+  ;; save cx
+  push cx
+
+  mov al, cl
+  mov cx, 4
+  shl al, cl
+  add al, dl
+
+  ;; restore cx
+  pop cx
+
   push_args<ax>
   call piece_at
   mov word ptr [piece], ax

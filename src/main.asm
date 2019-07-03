@@ -13,7 +13,12 @@
   extrn board_init:proc
   extrn board_move:proc
 
-  extrn piece_at:proc
+  extrn mouse_init:proc
+  extrn mouse_delete:proc
+
+  extrn main_loop:proc
+
+  extrn test_p:proc
 
   .data
 
@@ -38,6 +43,9 @@ initp proc near
   mov ax, vram
   mov es, ax
 
+  ;; init mouse
+  call mouse_init
+
   ;; load tileset
   call tileset_load
 
@@ -49,6 +57,10 @@ initp proc near
 
 ;;; procedure called on exit
 exitp proc near
+
+  ;; unset mouse proc
+  call mouse_delete
+
   ;; check if other proc (error) has
   ;; already set txt mode
   mov al, [byte ptr txt_mode_flag]
@@ -70,37 +82,21 @@ main:
 
   ;; -- TESTING --
 
-  call draw_board
-
-  mov ah, 0
-  int 16h
-
-  mov ah, 066h
-  mov al, 044h
-
-  push_args <ax>
-  call board_move
+  push_args<>
+  call test_p
   pop_args
-
-  call draw_board
-
-  mov ah, 0
-  int 16h
-
-  mov ah, 0
-  int 16h
-
 
   ;; -- TESTING --
 
+  ;; start main loop
+  call main_loop
 
-  ;; loop till esc
+
+  ;; exit on keyboard press
 inputl:
   mov ah, 0
   int 16h
 
-  cmp al, esc_char
-  jne inputl
   ;; -- --------------------------------
 
   call exitp
