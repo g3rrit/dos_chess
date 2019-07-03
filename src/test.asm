@@ -2,9 +2,10 @@
 
 include std.asm
 
-  public test_p
+  public testp
 
-  extrn mouse_get_pos:proc
+  extrn mouse_pos:proc
+  extrn mouse_board_pos:proc
   extrn board_move:proc
   extrn draw_board:proc
 
@@ -13,7 +14,14 @@ include std.asm
 
   .code
 
-test_p proc near
+testp proc near
+
+
+  call draw_board
+
+  call mouse_board_pos
+  call mouse_board_pos
+  call mouse_board_pos
 
   call draw_board
 
@@ -35,6 +43,7 @@ test_p proc near
   mov ah, 0
   int 16h
 
+  ret
 
   endp
 

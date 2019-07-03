@@ -12,7 +12,6 @@ esc_char = 1bh
 
 ;;; pushed args to stack
 push_args macro args
-  push ax bx cx dx
   mov word ptr [stack_arg_count], 0
   irp a, <args>
       add word ptr [stack_arg_count], 2
@@ -25,10 +24,6 @@ push_args macro args
 pop_args macro count
   pop word ptr [stack_arg_count]
   add sp, word ptr [stack_arg_count]
-  pop dx
-  pop cx
-  pop bx
-  pop ax
   endm
 
 ;;; gets the n-th argument
@@ -106,8 +101,10 @@ screen_size = screen_width * screen_height
 
 board_width = 160
 board_height = 160
-board_xpos = 20
+board_xpos = 80
 board_ypos = 20
+
+tile_size = 20
 
 ;;; set video mode to 320 x 200 256 colors vga
 ;;; uses { es, ax }

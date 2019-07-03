@@ -11,14 +11,23 @@
 
 
   include std.asm
+  include boardm.asm
 
   public main_loop
+
+  extrn mouse_board_pos:proc
+  extrn piece_at:proc
+  extrn board_move:proc
 
   .data
 
 ;;; the var holding the state
 ;;;  end (0) - choosing (1) - selected (2) - ai (3) - done (4)
 game_state db 1
+
+
+selected_xpos db 0
+selected_ypos db 0
 
   .code
 
@@ -28,7 +37,6 @@ main_loop proc near
 
 @@next_it:
 
-  push_args<>
   cmp byte ptr [game_state], 0
   je @@end
 
@@ -57,11 +65,9 @@ main_loop proc near
 
 
 @@next_state:
-  pop_args<>
   jmp @@next_it
 
 @@end:
-  pop_args<>
 
   leav
   ret
@@ -80,6 +86,35 @@ done_state proc near
 choosing_state proc near
   entr 0
 
+  ;; ax - xpos (0-7) | bx - ypos (0-7)
+  ;; dx - 1 valid | 0 invalid
+  call mouse_board_pos
+  cmp dx, 1
+  jne @@done
+
+  ;; check if selected piece is white
+  push ax
+  push bx
+  board_dword_byte
+  push_args<ax>
+  call piece_at
+  pop_args
+
+  ;; if first bit is set piece is white
+  and ax, 8
+  jnc @@done
+
+  mov byte ptr [game_state], 2
+
+  ;; TODO: calculate possible moves
+
+  pop bx
+  pop ax
+  mov byte ptr [selected_xpos], al
+  mov byte ptr [selected_ypos], bl
+
+
+@@done:
   leav
   ret
   endp
@@ -87,6 +122,34 @@ choosing_state proc near
 selected_state proc near
   entr 0
 
+  ;; ax - xpos (0-7) | bx - ypos (0-7)
+  ;; dx - 1 valid | 0 invalid
+  call mouse_board_pos
+  cmp dx, 1
+  jne @@done
+
+  ;; TODO: check if valid move
+
+  board_dword_byte
+  mov dx, ax
+
+  xor ax
+  mov al, byte ptr [selected_xpos]
+  mov bl, byte ptr [selected_ypos]
+  board_dword_byte
+
+  mov bx, ax
+  mov al, dl
+  mov ah, bl
+
+  push_args<ax>
+  call board_move
+  pop_args
+
+  ;; TODO: change state to ai state
+  mov byte ptr [game_state], 1
+
+@@done:
   leav
   ret
   endp

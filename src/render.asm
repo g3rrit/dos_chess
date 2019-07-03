@@ -30,38 +30,42 @@ draw_board proc near
   entr 0
 
   ;; draw board
-  mov cx, 80
-  mov dx, 20
+  mov cx, board_xpos
+  mov dx, board_ypos
 
   mov bx, 8
 @@draw_square:
+  save_reg
   push_args <bx, cx, dx>
   call tile_draw
   pop_args
+  res_reg
 
   switch_color
 
-  add cx, 20
-  cmp cx, 80 + 20 * 8
+  add cx, tile_size
+  cmp cx, board_xpos + tile_size * 8
   je @@next_line
   jmp @@draw_square
 
 @@next_line:
-  mov cx, 80
-  add dx, 20
+  mov cx, board_xpos
+  add dx, tile_size
 
   switch_color
 
-  cmp dx, 20 + 20 * 8
+  cmp dx, board_ypos + tile_size * 8
   jne @@draw_square
 
   ;; --------
 
 @@draw_pieces:
 
+  save_reg
   push_args <offset draw_pieces>
   call board_for_each
   pop_args
+  res_reg
 
   leav
   ret
@@ -99,9 +103,11 @@ ypos = bp + 6
 
   mov ax, word ptr [piece]
 
+  save_reg
   push_args <ax, cx, dx>
   call tile_draw
   pop_args
+  res_reg
 
 @@empty:
 

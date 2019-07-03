@@ -2,7 +2,8 @@
 
   include std.asm
 
-  public mouse_get_pos
+  public mouse_board_pos
+  public mouse_pos
   public mouse_delete
   public mouse_init
 
@@ -20,12 +21,61 @@ mouse_flag db 0
 
   .code
 
+mouse_board_pos proc near
+  entr 0
+
+  ;; ax - xpos (320) | bx - ypos (200)
+  call mouse_pos
+
+  ;; check if xpos is valid
+  cmp ax, board_xpos
+  jc @@invalid
+  cmp ax, board_xpos + tile_size * 8
+  jnc @@invalid
+  ;; check if ypos is valid
+  cmp bx, board_ypos
+  jc @@invalid
+  cmp bx, board_ypos + tile_size * 8
+  jnc @@invalid
+
+  sub ax, board_xpos
+  mov cx, tile_size
+  mov dx, 0
+  div cx
+
+  mov cx, ax
+  mov ax, bx
+  mov bx, cx
+
+  sub ax, board_ypos
+  mov cx, tile_size
+  mov dx, 0
+  div cx
+
+  mov cx, ax
+  mov ax, bx
+  mov bx, cx
+
+  mov dx, 1
+
+  leav
+  ret
+
+@@invalid:
+
+  mov dx, 0
+
+  leav
+  ret
+
+  endp
+
 ;;; this function blocks until
 ;;; a left mouse click is registered
 ;;; args: empty
 ;;; returns:
 ;;;  ax - xpos bx - ypos
-mouse_get_pos proc near
+mouse_pos proc near
   entr 0
 
   xor ax, ax
@@ -45,6 +95,9 @@ mouse_get_pos proc near
   mov ax, word ptr [mouse_pos_x]
   mov bx, word ptr [mouse_pos_y]
   mov byte ptr [mouse_flag], 0
+
+  mov cx, 1
+  shr ax, cl
 
   leav
   ret

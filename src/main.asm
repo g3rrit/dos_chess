@@ -3,22 +3,16 @@
   public txt_mode_flag
   public exitp
 
-  extrn draw_rect:proc
-  extrn draw_filled_rect:proc
   extrn error:proc
-  extrn read_bmp:proc
   extrn tileset_load:proc
-  extrn tile_draw:proc
-  extrn draw_board:proc
   extrn board_init:proc
-  extrn board_move:proc
 
   extrn mouse_init:proc
   extrn mouse_delete:proc
 
   extrn main_loop:proc
 
-  extrn test_p:proc
+  extrn testp:proc
 
   .data
 
@@ -82,18 +76,15 @@ main:
 
   ;; -- TESTING --
 
-  push_args<>
-  call test_p
-  pop_args
+  call testp
 
   ;; -- TESTING --
 
   ;; start main loop
-  call main_loop
+  ;; call main_loop
 
 
   ;; exit on keyboard press
-inputl:
   mov ah, 0
   int 16h
 

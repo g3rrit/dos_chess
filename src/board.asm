@@ -225,15 +225,19 @@ cb = bp + 6
   ;; restore cx
   pop cx
 
+  save_reg
   push_args<ax>
   call piece_at
-  mov word ptr [piece], ax
   pop_args
+  mov word ptr [piece], ax
+  res_reg
   mov ax, word ptr [piece]
 
+  save_reg
   push_args <ax, cx, dx>
   call word ptr [cb]
   pop_args
+  res_reg
 
   inc cx
 
