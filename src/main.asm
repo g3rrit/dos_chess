@@ -5,7 +5,7 @@
 
   extrn error:proc
   extrn tileset_load:proc
-  extrn board_init:proc
+  extrn cboard_init:proc
   extrn draw_board:proc
 
   extrn mouse_init:proc
@@ -45,7 +45,7 @@ initp proc near
   call tileset_load
 
   ;; initialize board
-  call board_init
+  call cboard_init
 
   ;; draw board
   call draw_board

@@ -16,8 +16,8 @@
   public main_loop
 
   extrn mouse_board_pos:proc
-  extrn piece_at:proc
-  extrn board_move:proc
+  extrn cboard_at:proc
+  extrn cboard_move:proc
   extrn draw_board:proc
 
   .data
@@ -98,7 +98,7 @@ choosing_state proc near
   push bx
   board_dword_byte
   push_args<ax>
-  call piece_at
+  call cboard_at
   pop_args
 
   ;; if first bit is set piece is black
@@ -147,7 +147,7 @@ selected_state proc near
   mov ah, bl
 
   push_args<ax>
-  call board_move
+  call cboard_move
   pop_args
 
   ;; TODO: change state to ai state
@@ -162,7 +162,6 @@ selected_state proc near
 
 ai_state proc near
   entr 0
-
 
   leav
   ret

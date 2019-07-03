@@ -2,8 +2,15 @@
 
   public board_init
   public board_for_each
-  public piece_at
+  public board_at
   public board_move
+
+  public cboard_init
+  public cboard_for_each
+  public cboard_at
+  public cboard_move
+
+  public cboard
 
   .data
 
@@ -39,7 +46,8 @@
 ;;; 0000 1110 - e - King (b)
 ;;; --  ----------------------------------
 
-  board db 64 dup (0)
+;;; current active board
+cboard db 64 dup (0)
 
 ;;; --  ----------------------------------
 
@@ -71,12 +79,29 @@ board_xy_pos macro
   pop bx
   endm
 
+;;; wrapper without explicit board
+;;; args:
+;;;     xy dxy as 2 8 bit values
+cboard_move proc near
+  entr 0
+
+loc = bp + 6
+  mov ax, offset cboard
+  mov bx, word ptr [loc]
+  push_args<ax, bx>
+  call board_move
+
+  leav
+  ret
+  endp
+
 ;;; moves piece from location xy to x0y0
 ;;; args:
-;;;     xy dxy as 2 8bit values
+;;;     board xy dxy as 2 8bit values
 board_move proc near
   entr 0
 
+board = word ptr [bp + 6 + 2]
 src = bp + 6 + 1
 dst = bp + 6
 
@@ -87,59 +112,98 @@ dst = bp + 6
   board_xy_pos
   mov bl, al
 
-  mov al, byte ptr [board + bx]
+  add bx, word ptr [board]
+  mov al, byte ptr [bx]
   push ax
-  mov byte ptr [board + bx], 0
+  mov byte ptr [bx], 0
+  xor bx, bx
 
   mov al, byte ptr [dst]
   board_xy_pos
   mov bl, al
 
   pop ax
-  mov byte ptr [board + bx], al
+  add bx, word ptr [board]
+  mov byte ptr [bx], al
 
   leav
   ret
 
   endp
 
+;;; wrapper without explicit board
+cboard_init proc near
+  entr 0
+
+  mov ax, offset cboard
+  push_args<ax>
+  call board_init
+
+  leav
+  ret
+  endp
+
+;;; initializes board
+;;; args:
+;;;     board
 board_init proc near
   entr 0
 
-  mov word ptr [board],     0a0ch
-  mov word ptr [board + 2], 0d0bh
-  mov word ptr [board + 4], 0b0eh
-  mov word ptr [board + 6], 0c0ah
-  mov word ptr [board + 8], 0909h
-  mov word ptr [board + 10], 0909h
-  mov word ptr [board + 12], 0909h
-  mov word ptr [board + 14], 0909h
+board = bp + 6
 
-  mov word ptr [board + 16], 0
-  mov word ptr [board + 18], 0
-  mov word ptr [board + 20], 0
-  mov word ptr [board + 22], 0
-  mov word ptr [board + 24], 0
-  mov word ptr [board + 26], 0
-  mov word ptr [board + 28], 0
-  mov word ptr [board + 30], 0
-  mov word ptr [board + 32], 0
-  mov word ptr [board + 34], 0
-  mov word ptr [board + 36], 0
-  mov word ptr [board + 38], 0
-  mov word ptr [board + 40], 0
-  mov word ptr [board + 42], 0
-  mov word ptr [board + 44], 0
-  mov word ptr [board + 46], 0
+  mov bx, word ptr [board]
+  mov word ptr [bx],     0a0ch
+  mov word ptr [bx + 2], 0d0bh
+  mov word ptr [bx + 4], 0b0eh
+  mov word ptr [bx + 6], 0c0ah
+  mov word ptr [bx + 8], 0909h
+  mov word ptr [bx + 10], 0909h
+  mov word ptr [bx + 12], 0909h
+  mov word ptr [bx + 14], 0909h
 
-  mov word ptr [board + 48], 0101h
-  mov word ptr [board + 50], 0101h
-  mov word ptr [board + 52], 0101h
-  mov word ptr [board + 54], 0101h
-  mov word ptr [board + 56], 0204h
-  mov word ptr [board + 58], 0503h
-  mov word ptr [board + 60], 0306h
-  mov word ptr [board + 62], 0402h
+  mov word ptr [bx + 16], 0
+  mov word ptr [bx + 18], 0
+  mov word ptr [bx + 20], 0
+  mov word ptr [bx + 22], 0
+  mov word ptr [bx + 24], 0
+  mov word ptr [bx + 26], 0
+  mov word ptr [bx + 28], 0
+  mov word ptr [bx + 30], 0
+  mov word ptr [bx + 32], 0
+  mov word ptr [bx + 34], 0
+  mov word ptr [bx + 36], 0
+  mov word ptr [bx + 38], 0
+  mov word ptr [bx + 40], 0
+  mov word ptr [bx + 42], 0
+  mov word ptr [bx + 44], 0
+  mov word ptr [bx + 46], 0
+
+  mov word ptr [bx + 48], 0101h
+  mov word ptr [bx + 50], 0101h
+  mov word ptr [bx + 52], 0101h
+  mov word ptr [bx + 54], 0101h
+  mov word ptr [bx + 56], 0204h
+  mov word ptr [bx + 58], 0503h
+  mov word ptr [bx + 60], 0306h
+  mov word ptr [bx + 62], 0402h
+
+  leav
+  ret
+  endp
+
+;;; wrapper without explicit board
+;;; args:
+;;;     xy as lower byte
+;;; retruns:
+;;;     ax: piece
+cboard_at proc near
+  entr 0
+
+pos = bp + 6
+  mov ax, offset cboard
+  mov bx, word ptr [pos]
+  push_args<ax, bx>
+  call board_at
 
   leav
   ret
@@ -147,12 +211,13 @@ board_init proc near
 
 ;;; retrieves piece at location x y
 ;;;  args:
-;;;     xy as lower byte
+;;;     board xy as lower byte
 ;;;  returns:
 ;;;     ax: piece
-piece_at proc near
+board_at proc near
   entr 0
 
+board = bp + 6 + 2
 pos = bp + 6
 
   xor ax, ax
@@ -179,7 +244,8 @@ pos = bp + 6
   add al, bl
 
   mov bx, ax
-  mov al, byte ptr [board + bx]
+  add bx, word ptr [board]
+  mov al, byte ptr [bx]
 
   leav
   ret
@@ -192,15 +258,33 @@ pos = bp + 6
   endp
 
 
+;;; wrapper without explicit board
+;;; args:
+;;;     cb
+cboard_for_each proc near
+  entr 0
+cb = bp + 6
+
+  mov ax, offset cboard
+  mov bx, word ptr [cb]
+  push_args<ax, bx>
+  call board_for_each
+  pop_args
+
+  leav
+  ret
+  endp
+
 ;;; executes procudure for each location on board
 ;;; proc get location as stack args: piece x y
 ;;; args:
-;;;     cb
+;;;     board cb
 board_for_each proc near
   entr 2
 
 piece = bp - 2
 
+board = bp + 6 + 2
 cb = bp + 6
 
   xor ax, ax
@@ -222,15 +306,17 @@ cb = bp + 6
   pop cx
 
   save_reg
-  push_args<ax>
-  call piece_at
+  mov bx, word ptr [board]
+  push_args<bx, ax>
+  call board_at
   pop_args
   mov word ptr [piece], ax
   res_reg
   mov ax, word ptr [piece]
 
   save_reg
-  push_args <ax, cx, dx>
+  mov bx, word ptr [board]
+  push_args <bx, ax, cx, dx>
   call word ptr [cb]
   pop_args
   res_reg

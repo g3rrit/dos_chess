@@ -4,9 +4,9 @@
   public draw_filled_rect
   public draw_board
 
-  extrn board
+  extrn cboard
   extrn tile_draw:proc
-  extrn board_for_each:proc
+  extrn cboard_for_each:proc
 
   .data
 
@@ -63,7 +63,7 @@ draw_board proc near
 
   save_reg
   push_args <offset draw_pieces>
-  call board_for_each
+  call cboard_for_each
   pop_args
   res_reg
 
