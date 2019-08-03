@@ -29,6 +29,8 @@ conn:
 draw_board proc near
   entr 0
 
+  disable_cursor
+
   ;; draw board
   mov cx, board_xpos
   mov dx, board_ypos
@@ -66,6 +68,8 @@ draw_board proc near
   call cboard_for_each
   pop_args
   res_reg
+
+  enable_cursor
 
   leav
   ret

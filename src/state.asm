@@ -66,6 +66,8 @@ main_loop proc near
 
 
 @@next_state:
+  call draw_board
+
   jmp @@next_it
 
 @@end:
@@ -116,8 +118,6 @@ choosing_state proc near
   mov byte ptr [selected_xpos], al
   mov byte ptr [selected_ypos], bl
 
-  call draw_board
-
 @@done:
   leav
   ret
@@ -152,8 +152,6 @@ selected_state proc near
 
   ;; TODO: change state to ai state
   mov byte ptr [game_state], 1
-
-  call draw_board
 
 @@done:
   leav
