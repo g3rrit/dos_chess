@@ -7,6 +7,39 @@
 
   .code
 
+;;; converts a position in
+;;; low byte to
+;;; low high
+;;; pos in ax
+pos_lb_lh macro
+  push bx
+  push cx
+
+  mov cx, 4
+  mov bx, ax
+  shr bl, cl
+  and ax, 0fh
+  mov ah, bl
+
+  pop cx
+  pop bx
+  endm
+
+;;; converts a postion in
+;;; low high to
+;;; low byte
+;;; pos in ax
+pos_lh_lb macro
+  push cx
+
+  mov cx, 4
+  shl ah, cl
+  or al, ah
+  xor ah, ah
+
+  pop cx
+  endm
+
 ;;; wrapper for current board
 ;;; args:
 ;;;     buf xy pos as lower byte
@@ -47,6 +80,13 @@ pos = bp + 6
   mov bx, word ptr [pos]
   push_args<ax, bx>
   call board_at
+
+  ;; change position to low high byte
+  push ax
+  mov ax, word ptr [pos]
+  pos_lb_lh
+  mov word ptr [pos], ax
+  pop ax
 
   mov bx, 8
   and bx, ax
@@ -117,13 +157,16 @@ pos = bp + 6
   endp
 
 ;;; helper macro
-;;; uses bx
 ;;; board at bp + 12
-;;; pos in ax
+;;; pos in bx
 ;;; returns piece in ax
 get_board_at macro
 
-  mov bx, word ptr [bp + 12]
+  mov ax, bx
+  pos_lh_lb
+  mov bx, ax
+
+  mov ax, word ptr [bp + 12]
   push_args<ax, bx>
   call board_at
   push ax
@@ -133,13 +176,30 @@ get_board_at macro
   endm
 
 valid_pawn proc near
-  entr 0
+  entr 2
+
+count = bp - 2
+  mov word ptr [count], 0
 
 board = bp + 6 + 6
 buf = bp + 6 + 4
 pos = bp + 6 + 2
 color = bp + 6
 
+  cmp word ptr [color], 1
+  je @@black
+
+  ;; white pawn
+
+  ;; check if at starting pos
+  mov ax, word ptr [pos]
+  cmp al, 7
+  jne @@wnot_start
+
+@@wnot_start:
+
+  ;; black pawn
+@@black:
 
 
   leav
