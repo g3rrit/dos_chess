@@ -1,4 +1,5 @@
   include std.asm
+  include tilem.asm
 
   public draw_rect
   public draw_filled_rect
@@ -7,6 +8,7 @@
   extrn tile_draw:proc
 
   extrn board_at_pos:proc
+  extrn get_player:proc
 
   .data
 
@@ -31,6 +33,49 @@ draw_board proc near
 
   disable_cursor
 
+  ;; draw player indicator
+  call get_player
+  cmp ax, 0
+  jne @@player_black
+
+@@player_white:
+  mov bh, tile_indicator_hw
+  mov bl, tile_indicator_vw
+
+  jmp @@done_player
+@@player_black:
+  mov bh, tile_indicator_hb
+  mov bl, tile_indicator_vb
+
+@@done_player:
+  xor ax, ax
+
+  mov al, bh
+  mov cx, board_xpos + (board_width / 2) - (indicator_l / 2)
+  mov dx, board_ypos - indicator_s
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+
+  mov dx, board_ypos + board_height
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+
+  mov al, bl
+  mov cx, board_xpos - indicator_s
+  mov dx, board_ypos + (board_height / 2) - (indicator_l / 2)
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+
+  mov cx, board_xpos + board_width
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+
+  ;; ------------
+
   ;; draw board
   mov cx, board_xpos
   mov dx, board_ypos
@@ -39,25 +84,18 @@ draw_board proc near
   ;; draw black
 @@draw_black:
 
-  mov ax, 7
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
   mov ax, bx
   call board_at_pos
 
   cmp ax, 0ffffh
   je @@done
 
-  ;; check for marking in ah
+  push bx
+  mov bx, 1
 
-  xor ah, ah
-  add cx, 2
-  add dx, 2
   call draw_piece
-  sub cx, 2
-  sub dx, 2
+
+  pop bx
 
   ;; inc and check for next line
   inc bx
@@ -78,23 +116,18 @@ draw_board proc near
   ;; draw white
 @@draw_white:
 
-  mov ax, 8
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
   mov ax, bx
   call board_at_pos
 
   cmp ax, 0ffffh
   je @@done
 
-  xor ah, ah
-  add cx, 2
-  add dx, 2
+  push bx
+  mov bx, 0
+
   call draw_piece
-  sub cx, 2
-  sub dx, 2
+
+  pop bx
 
   ;; inc and check for next line
   inc bx
@@ -119,10 +152,55 @@ draw_board proc near
   endp
 
 draw_piece proc near
+  push ax
 
+  cmp bx, 0
+  je @@black_sq
+
+  ;; white square
+  cmp ah, 1
+  je @@white_sel
+
+  mov ax, tile_empty_w
+  jmp @@done_sq
+
+@@white_sel:
+  mov ax, tile_empty_ws
+  jmp @@done_sq
+
+  ;; black square
+@@black_sq:
+
+  cmp ah, 1
+  je @@black_sel
+
+  mov ax, tile_empty_b
+  jmp @@done_sq
+
+@@black_sel:
+  mov ax, tile_empty_bs
+
+  ;; -----
+@@done_sq:
   push_args<ax, cx, dx>
   call tile_draw
   pop_args
+
+  pop ax
+
+  cmp al, 0
+  je @@done
+
+  xor ah, ah
+  add cx, 2
+  add dx, 2
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+  sub cx, 2
+  sub dx, 2
+
+@@done:
 
   ret
   endp

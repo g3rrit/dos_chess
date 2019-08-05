@@ -117,6 +117,9 @@ screen_width = 320
 screen_height = 200
 screen_size = screen_width * screen_height
 
+indicator_s = 8
+indicator_l = 40
+
 board_width = 160
 board_height = 160
 board_xpos = 80

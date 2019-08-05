@@ -33,12 +33,22 @@ tile_rook_b dw 48, 16, 16, 16
 tile_queen_b dw 64, 16, 16, 16
 tile_king_b dw 80, 16, 16, 16
 
-tile_empty_w dw 0, 32, 20, 20
-tile_empty_b dw 20, 32, 20, 20
+tile_empty_b dw 0, 32, 20, 20
+tile_empty_w dw 20, 32, 20, 20
+
+tile_empty_bs dw 40, 32, 20, 20
+tile_empty_ws dw 60, 32, 20, 20
 
 tile_empty dw 40, 32, 20, 20
 
-tile_map dw tile_empty, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w
+tile_indicator_hb dw 0, 52, 40, 8
+tile_indicator_hw dw 0, 60, 40, 8
+
+tile_indicator_vb dw 0, 68, 8, 40
+tile_indicator_vw dw 8, 68, 8, 40
+
+
+tile_map dw tile_empty, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w, tile_indicator_hw, tile_indicator_hb, tile_indicator_vw, tile_indicator_vb, tile_empty_ws, tile_empty_bs
 
 
 ;;; --  ----------------------------------

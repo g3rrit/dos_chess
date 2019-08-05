@@ -20,6 +20,9 @@
   extrn board_move:proc
   extrn draw_board:proc
 
+  extrn set_player_white:proc
+  extrn set_player_black:proc
+
   .data
 
 ;;; the var holding the state
@@ -106,9 +109,9 @@ choosing_state_white proc near
   call board_at
 
   ;; if first bit is set piece is black
-  cmp ax, 8
+  cmp al, 8
   jnc @@done
-  cmp ax, 0
+  cmp al, 0
   je @@done
 
   ;; set next state
@@ -149,6 +152,9 @@ selected_state_white proc near
   ;; change state selecting black
   mov byte ptr [game_state], 3
 
+  ;; set current player on board
+  call set_player_black
+
 @@done:
   leav
   ret
@@ -168,9 +174,9 @@ choosing_state_black proc near
   call board_at
 
   ;; if first bit is set piece is black
-  cmp ax, 8
+  cmp al, 8
   jc @@done
-  cmp ax, 0
+  cmp al, 0
   je @@done
 
   ;; set next state
@@ -210,6 +216,9 @@ selected_state_black proc near
 
   ;; change state selecting white
   mov byte ptr [game_state], 1
+
+  ;; set current player on board
+  call set_player_white
 
 @@done:
   leav

@@ -7,6 +7,9 @@
   public board_set
   public board_move
 
+  public set_player_white
+  public set_player_black
+  public get_player
 
   public board
 
@@ -44,13 +47,32 @@
 ;;; 0000 1110 - e - King (b)
 ;;; --  ----------------------------------
 
-;;; current active board
+;;; board
 board db 64 dup (0)
+
+;;; current_player 0 - white | 1 - black
+player db 0
 
 ;;; --  ----------------------------------
 
 
   .code
+
+set_player_white proc near
+  mov byte ptr [player], 0
+  ret
+  endp
+
+set_player_black proc near
+  mov byte ptr [player], 1
+  ret
+  endp
+
+get_player proc near
+  xor ax, ax
+  mov al, byte ptr [player]
+  ret
+  endp
 
 ;;; converts position xy
 ;;; to a representation in al
