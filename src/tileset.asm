@@ -36,7 +36,9 @@ tile_king_b dw 80, 16, 16, 16
 tile_empty_w dw 0, 32, 20, 20
 tile_empty_b dw 20, 32, 20, 20
 
-tile_map dw tile_empty_b, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w
+tile_empty dw 40, 32, 20, 20
+
+tile_map dw tile_empty, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w
 
 
 ;;; --  ----------------------------------
@@ -47,6 +49,7 @@ tile_map dw tile_empty_b, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b
 ;;; args t x y
 tile_draw proc near
   entr 0
+  save_reg
 
 y = bp + 6
 x = bp + 6 + 2
@@ -67,6 +70,8 @@ t = bp + 6 + 4
   push ax
   call tileset_draw
 
+  add sp, 14
+  res_reg
   leav
   ret
   endp

@@ -10,6 +10,24 @@ locals @@
 
 esc_char = 1bh
 
+word_to_byte macro
+  push cx
+  mov cx, 4
+  shl ah, cl
+  or al, ah
+  xor ah, ah
+  pop cx
+  endm
+
+byte_to_word macro
+  push cx
+  mov ah, al
+  and al, 0fh
+  mov cx, 4
+  shr ah, cl
+  pop cx
+  endm
+
 ;;; pushed args to stack
 push_args macro args
   mov word ptr [stack_arg_count], 0

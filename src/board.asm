@@ -1,16 +1,14 @@
   include std.asm
 
   public board_init
-  public board_for_each
+  public board_at_pos
   public board_at
+  public board_set_pos
+  public board_set
   public board_move
 
-  public cboard_init
-  public cboard_for_each
-  public cboard_at
-  public cboard_move
 
-  public cboard
+  public board
 
   .data
 
@@ -47,111 +45,46 @@
 ;;; --  ----------------------------------
 
 ;;; current active board
-cboard db 64 dup (0)
+board db 64 dup (0)
 
 ;;; --  ----------------------------------
 
 
   .code
 
-;;; converts the byte in al
-;;; where the first nibble represents
-;;; the x pos and second one the y pos
+;;; converts position xy
 ;;; to a representation in al
 ;;; describing the location on the board 0 - 63
 board_xy_pos macro
-  push bx
   push cx
-
+  push dx
+  mov dx, ax
   xor ah, ah
-  ;; save x pos to bx
-  mov bx, ax
-  mov cx, 4
-  shr bx, cl
-
-  ;; multiply by 8 and add xpos
   mov cx, 8
-  and ax, 0fh
-  mul cx
-  add ax, bx
-
+  mul cl
+  add al, dh
+  xor ah, ah
+  pop dx
   pop cx
-  pop bx
   endm
 
-;;; wrapper without explicit board
-;;; args:
-;;;     xy dxy as 2 8 bit values
-cboard_move proc near
-  entr 0
-
-loc = bp + 6
-  mov ax, offset cboard
-  mov bx, word ptr [loc]
-  push_args<ax, bx>
-  call board_move
-
-  leav
-  ret
-  endp
-
-;;; moves piece from location xy to x0y0
-;;; args:
-;;;     board xy dxy as 2 8bit values
-board_move proc near
-  entr 0
-
-board = word ptr [bp + 6 + 2]
-src = bp + 6 + 1
-dst = bp + 6
-
-  xor ax, ax
-  xor bx, bx
-
-  mov al, byte ptr [src]
-  board_xy_pos
-  mov bl, al
-
-  add bx, word ptr [board]
-  mov al, byte ptr [bx]
-  push ax
-  mov byte ptr [bx], 0
-  xor bx, bx
-
-  mov al, byte ptr [dst]
-  board_xy_pos
-  mov bl, al
-
-  pop ax
-  add bx, word ptr [board]
-  mov byte ptr [bx], al
-
-  leav
-  ret
-
-  endp
-
-;;; wrapper without explicit board
-cboard_init proc near
-  entr 0
-
-  mov ax, offset cboard
-  push_args<ax>
-  call board_init
-
-  leav
-  ret
-  endp
+;;; converts a position in al 0 - 63
+;;; to a representation in ah al
+board_pos_xy macro
+  push dx
+  push cx
+  mov dx, 0
+  mov cx, 8
+  div cl
+  pop cx
+  pop dx
+  endm
 
 ;;; initializes board
-;;; args:
-;;;     board
 board_init proc near
   entr 0
 
-board = bp + 6
-
-  mov bx, word ptr [board]
+  mov bx, offset board
   mov word ptr [bx],     0a0ch
   mov word ptr [bx + 2], 0d0bh
   mov word ptr [bx + 4], 0b0eh
@@ -191,147 +124,113 @@ board = bp + 6
   ret
   endp
 
-;;; wrapper without explicit board
+;;; moves piece from ax to bx
+;;; x in high y in low
 ;;; args:
-;;;     xy as lower byte
-;;; retruns:
-;;;     ax: piece
-cboard_at proc near
+;;;     ax: src
+;;;     bx: dest
+board_move proc near
   entr 0
 
-pos = bp + 6
-  mov ax, offset cboard
-  mov bx, word ptr [pos]
-  push_args<ax, bx>
+  push cx
+  push dx
+  mov cx, ax
+  mov dx, bx
   call board_at
+  push ax
+  mov al, 0
+  mov bx, ax
+  mov ax, cx
+  call board_set
+  pop bx
+  mov ax, dx
+  call board_set
 
+  pop dx
+  pop cx
+  leav
+  ret
+  endp
+
+;;; retrieves piece at location pos
+;;; args:
+;;;     ax: pos
+;;; returns:
+;;;     ax: piece
+board_at_pos proc near
+  entr 0
+  push bx
+
+  cmp ax, 64
+  jnc @@invalid_pos
+
+  add ax, offset board
+  mov bx, ax
+  mov al, byte ptr [bx]
+  byte_to_word
+  pop bx
+  leav
+  ret
+
+@@invalid_pos:
+  mov ax, 0ffffh
+  pop bx
+  leav
+  ret
+  endp
+
+;;; sets board at position ax to bx
+;;; args:
+;;;     ax: pos
+;;;     bx: new value
+board_set_pos proc near
+  entr 0
+  push bx
+
+  cmp ax, 64
+  jnc @@invalid_pos
+
+  push ax
+  mov ax, bx
+  pop bx
+
+  word_to_byte
+
+  add bx, offset board
+  mov byte ptr [bx], al
+
+  pop bx
+  leav
+  ret
+
+ @@invalid_pos:
+  mov ax, 0ffffh
+  pop bx
   leav
   ret
   endp
 
 ;;; retrieves piece at location x y
 ;;;  args:
-;;;     board xy as lower byte
+;;;     ax: pos x in high y in low
 ;;;  returns:
 ;;;     ax: piece
 board_at proc near
   entr 0
-
-board = bp + 6 + 2
-pos = bp + 6
-
-  xor ax, ax
-  xor bx, bx
-
-  ;; x pos in bl
-  mov al, byte ptr [pos]
-  mov cx, 4
-  shr al, cl
-  mov bl, al
-
-  ;; y pos in al
-  mov al, byte ptr [pos]
-  and al, 0fh
-
-  cmp al, 8
-  jge @@invalid_pos
-  cmp bl, 8
-  jge @@invalid_pos
-
-  mov cx, 8
-  mul cx
-
-  add al, bl
-
-  mov bx, ax
-  add bx, word ptr [board]
-  mov al, byte ptr [bx]
-
+  board_xy_pos
+  call board_at_pos
   leav
   ret
-
-@@invalid_pos:
-  mov ax, 0ffffh
-  leav
-  ret
-
   endp
 
-
-;;; wrapper without explicit board
+;;; sets value at location x y
 ;;; args:
-;;;     cb
-cboard_for_each proc near
+;;;     ax: pos x in high y in low
+;;;     bx: value
+board_set proc near
   entr 0
-cb = bp + 6
-
-  mov ax, offset cboard
-  mov bx, word ptr [cb]
-  push_args<ax, bx>
-  call board_for_each
-  pop_args
-
-  leav
-  ret
-  endp
-
-;;; executes procudure for each location on board
-;;; proc get location as stack args: piece x y
-;;; args:
-;;;     board cb
-board_for_each proc near
-  entr 2
-
-piece = bp - 2
-
-board = bp + 6 + 2
-cb = bp + 6
-
-  xor ax, ax
-  xor bx, bx
-  xor cx, cx
-  xor dx, dx
-
-@@continue:
-
-  ;; save cx
-  push cx
-
-  mov al, cl
-  mov cx, 4
-  shl al, cl
-  add al, dl
-
-  ;; restore cx
-  pop cx
-
-  save_reg
-  mov bx, word ptr [board]
-  push_args<bx, ax>
-  call board_at
-  pop_args
-  mov word ptr [piece], ax
-  res_reg
-  mov ax, word ptr [piece]
-
-  save_reg
-  mov bx, word ptr [board]
-  push_args <bx, ax, cx, dx>
-  call word ptr [cb]
-  pop_args
-  res_reg
-
-  inc cx
-
-  cmp cx, 8
-  jne @@continue
-
-  mov cx, 0
-  inc dx
-
-  cmp dx, 8
-  jne @@continue
-
+  board_xy_pos
+  call board_set_pos
   leav
   ret
   endp

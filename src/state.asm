@@ -16,8 +16,8 @@
   public main_loop
 
   extrn mouse_board_pos:proc
-  extrn cboard_at:proc
-  extrn cboard_move:proc
+  extrn board_at:proc
+  extrn board_move:proc
   extrn draw_board:proc
 
   .data
@@ -89,7 +89,7 @@ done_state proc near
 choosing_state proc near
   entr 0
 
-  ;; ax - xpos (0-7) | bx - ypos (0-7)
+  ;; ah - xpos (0-7) | bl - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
   cmp dx, 1
@@ -97,11 +97,7 @@ choosing_state proc near
 
   ;; check if selected piece is white
   push ax
-  push bx
-  board_dword_byte
-  push_args<ax>
-  call cboard_at
-  pop_args
+  call board_at
 
   ;; if first bit is set piece is black
   cmp ax, 8
@@ -113,10 +109,9 @@ choosing_state proc near
 
   ;; TODO: calculate possible moves
 
-  pop bx
   pop ax
-  mov byte ptr [selected_xpos], al
-  mov byte ptr [selected_ypos], bl
+  mov byte ptr [selected_xpos], ah
+  mov byte ptr [selected_ypos], al
 
 @@done:
   leav
@@ -126,7 +121,7 @@ choosing_state proc near
 selected_state proc near
   entr 0
 
-  ;; ax - xpos (0-7) | bx - ypos (0-7)
+  ;; ah - xpos (0-7) | al - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
   cmp dx, 1
@@ -134,21 +129,12 @@ selected_state proc near
 
   ;; TODO: check if valid move
 
-  board_dword_byte
-  mov dx, ax
-
-  xor ax, ax
-  mov al, byte ptr [selected_xpos]
-  mov bl, byte ptr [selected_ypos]
-  board_dword_byte
-
   mov bx, ax
-  mov al, dl
-  mov ah, bl
 
-  push_args<ax>
-  call cboard_move
-  pop_args
+  mov ah, byte ptr [selected_xpos]
+  mov al, byte ptr [selected_ypos]
+
+  call board_move
 
   ;; TODO: change state to ai state
   mov byte ptr [game_state], 1

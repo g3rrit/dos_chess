@@ -4,9 +4,9 @@
   public draw_filled_rect
   public draw_board
 
-  extrn cboard
   extrn tile_draw:proc
-  extrn cboard_for_each:proc
+
+  extrn board_at_pos:proc
 
   .data
 
@@ -25,7 +25,7 @@ nblack:
 conn:
   endm
 
-  ;; draws the chessboard
+;;; draw the chessboard
 draw_board proc near
   entr 0
 
@@ -35,39 +35,82 @@ draw_board proc near
   mov cx, board_xpos
   mov dx, board_ypos
 
-  mov bx, 8
-@@draw_square:
-  save_reg
-  push_args <bx, cx, dx>
+  mov bx, 0
+  ;; draw black
+@@draw_black:
+
+  mov ax, 7
+  push_args<ax, cx, dx>
   call tile_draw
   pop_args
-  res_reg
 
-  switch_color
+  mov ax, bx
+  call board_at_pos
 
+  cmp ax, 0ffffh
+  je @@done
+
+  ;; check for marking in ah
+
+  xor ah, ah
+  add cx, 2
+  add dx, 2
+  call draw_piece
+  sub cx, 2
+  sub dx, 2
+
+  ;; inc and check for next line
+  inc bx
   add cx, tile_size
   cmp cx, board_xpos + tile_size * 8
-  je @@next_line
-  jmp @@draw_square
+  je @@next_line_black
+  jmp @@draw_white
 
-@@next_line:
+@@next_line_black:
   mov cx, board_xpos
   add dx, tile_size
 
-  switch_color
+  cmp dx, board_ypos + tile_size * 8
+  je @@done
+  jmp @@draw_black
+
+
+  ;; draw white
+@@draw_white:
+
+  mov ax, 8
+  push_args<ax, cx, dx>
+  call tile_draw
+  pop_args
+
+  mov ax, bx
+  call board_at_pos
+
+  cmp ax, 0ffffh
+  je @@done
+
+  xor ah, ah
+  add cx, 2
+  add dx, 2
+  call draw_piece
+  sub cx, 2
+  sub dx, 2
+
+  ;; inc and check for next line
+  inc bx
+  add cx, tile_size
+  cmp cx, board_xpos + tile_size * 8
+  jne @@draw_black
+
+  mov cx, board_xpos
+  add dx, tile_size
 
   cmp dx, board_ypos + tile_size * 8
-  jne @@draw_square
+  jne @@draw_white
+
 
   ;; --------
-
-@@draw_pieces:
-
-  save_reg
-  push_args <offset draw_pieces>
-  call cboard_for_each
-  pop_args
-  res_reg
+@@done:
 
   enable_cursor
 
@@ -75,47 +118,12 @@ draw_board proc near
   ret
   endp
 
-;;; --   DRAW_PIECE_PROC -----------------
+draw_piece proc near
 
-;;; args:
-;;;  - piece x y
-draw_pieces proc near
-  entr 0
-
-piece = bp + 6 + 4
-xpos = bp + 6 + 2
-ypos = bp + 6
-
-  cmp word ptr [piece], 0
-  je @@empty
-
-  mov cx, word ptr [xpos]
-
-  mov ax, cx
-  mov cx, 20
-  mul cx
-  mov cx, ax
-  add cx, 82
-
-  mov dx, word ptr [ypos]
-
-  mov ax, dx
-  mov dx, 20
-  mul dx
-  mov dx, ax
-  add dx, 22
-
-  mov ax, word ptr [piece]
-
-  save_reg
-  push_args <ax, cx, dx>
+  push_args<ax, cx, dx>
   call tile_draw
   pop_args
-  res_reg
 
-@@empty:
-
-  leav
   ret
   endp
 

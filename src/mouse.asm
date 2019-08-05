@@ -53,8 +53,9 @@ mouse_board_pos proc near
   div cx
 
   mov cx, ax
-  mov ax, bx
-  mov bx, cx
+
+  mov ah, bl
+  mov al, cl
 
   mov dx, 1
 

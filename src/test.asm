@@ -6,7 +6,7 @@ include std.asm
 
   extrn mouse_pos:proc
   extrn mouse_board_pos:proc
-  extrn cboard_move:proc
+  extrn board_move:proc
   extrn draw_board:proc
   extrn cboard_at:proc
 
@@ -17,36 +17,16 @@ include std.asm
 
 testp proc near
 
-  mov ax, 01644h
-  push_args<ax>
-  call cboard_move
-  pop_args
+  mov ax, 0
+  mov bh, 1
+  mov bl, 1
+  call board_move
 
   call draw_board
 
   ;; call mouse_board_pos
   ;; call mouse_board_pos
   ;; call mouse_board_pos
-
-  call draw_board
-
-  mov ah, 0
-  int 16h
-
-  mov ah, 077h
-  mov al, 0
-
-  push_args <ax>
-  call cboard_move
-  pop_args
-
-  call draw_board
-
-  mov ah, 0
-  int 16h
-
-  mov ah, 0
-  int 16h
 
   ret
 
