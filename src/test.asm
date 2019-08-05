@@ -19,8 +19,17 @@ include std.asm
 
 testp proc near
 
-  mov ah, 1
-  mov al, 1
+  mov ah, 2
+  mov al, 7
+
+  mov bh, 3
+  mov bl, 3
+  call board_move
+
+  call draw_board
+
+  mov ah, 3
+  mov al, 3
   call valid_moves
 
   ;; call mouse_board_pos

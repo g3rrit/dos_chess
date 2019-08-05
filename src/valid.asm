@@ -29,6 +29,8 @@ valid_moves proc near
 
   mov word ptr [pos], ax
 
+  xor dx, dx
+
   cmp bx, 0
   je @@empty
   cmp bx, 1
@@ -120,6 +122,7 @@ valid_moves proc near
 ;;; selects a position if empty
 sel_empty macro
   local done, select
+  xor dx, dx
   push ax
   call board_at
   cmp ax, 0ffffh
@@ -143,12 +146,64 @@ done:
 ;;; location at ax
 sel_white macro
   local done, select, select_p
+  xor dx, dx
   push ax
   call board_at
   cmp ax, 0ffffh
   je done
   cmp al, 0
   je select
+  mov dx, 1
+  cmp al, 8
+  jc done
+
+select:
+  pop ax
+  push ax
+  call set_selected
+
+done:
+  pop ax
+  endm
+
+;;; selects a position if empty
+;;; or if white piece at location
+;;; location at ax
+sel_black macro
+  local done, select, select_p
+  xor dx, dx
+  push ax
+  call board_at
+  cmp ax, 0ffffh
+  je done
+  cmp al, 0
+  je select
+  mov dx, 1
+  cmp al, 8
+  jnc done
+
+select:
+  pop ax
+  push ax
+  call set_selected
+
+done:
+  pop ax
+  endm
+
+
+;;; selects a position
+;;; if black piece at location
+;;; location at ax
+sel_white_only macro
+  local done, select, select_p
+  xor dx, dx
+  push ax
+  call board_at
+  cmp ax, 0ffffh
+  je done
+  cmp al, 0
+  je done
   cmp al, 8
   jnc select_p
   jmp done
@@ -165,17 +220,18 @@ done:
   pop ax
   endm
 
-;;; selects a position if empty
-;;; or if white piece at location
+;;; selects a position
+;;; if white piece at location
 ;;; location at ax
-sel_black macro
+sel_black_only macro
   local done, select, select_p
+  xor dx, dx
   push ax
   call board_at
   cmp ax, 0ffffh
   je done
   cmp al, 0
-  je select
+  je done
   cmp al, 8
   jc select_p
   jmp done
@@ -192,6 +248,10 @@ select:
 done:
   pop ax
   endm
+
+;;; --------------------------
+;;; ---------- PAWN ----------
+;;; --------------------------
 
 valid_pawn_w proc near
   entr 0
@@ -211,10 +271,10 @@ valid_pawn_w proc near
 @@no_two:
 
   dec ah
-  sel_white
+  sel_white_only
 
   add ah, 2
-  sel_white
+  sel_white_only
 
   leav
   ret
@@ -238,14 +298,19 @@ valid_pawn_b proc near
 @@no_two:
 
   dec ah
-  sel_black
+  sel_black_only
 
   add ah, 2
-  sel_black
+  sel_black_only
 
   leav
   ret
   endp
+
+;;; --------------------------
+;;; ---------- KNIGHT --------
+;;; --------------------------
+
 
 valid_knight_w proc near
   entr 0
@@ -283,39 +348,105 @@ valid_knight_w proc near
   ret
   endp
 
+valid_knight_b proc near
+  entr 0
+
+  sub al, 2
+  add ah, 1
+  sel_black
+
+  inc ah
+  inc al
+  sel_black
+
+  add al, 2
+  sel_black
+
+  inc al
+  dec ah
+  sel_black
+
+  sub ah, 2
+  sel_black
+
+  dec al
+  dec ah
+  sel_black
+
+  sub al, 2
+  sel_black
+
+  dec al
+  inc ah
+  sel_white
+
+  leav
+  ret
+  endp
+
+;;; --------------------------
+;;; ---------- BISHOP --------
+;;; --------------------------
+
+
 valid_bishop_w proc near
   entr 0
 
-  leav
-  ret
-  endp
+@@left_up:
+  sub ah, 1
+  jc @@next0
+  sub al, 1
+  jc @@next0
+  sel_white
+  cmp dx, 1
+  je @@next0
 
-valid_rook_w proc near
-  entr 0
+  jmp @@left_up
 
+@@next0:
+  mov ax, word ptr [pos]
+@@left_down:
+  sub ah, 1
+  jc @@next1
+  inc al
+  cmp al, 8
+  jnc @@next1
+  sel_white
+  cmp dx, 1
+  je @@next1
 
-  leav
-  ret
-  endp
+  jmp @@left_down
 
-valid_queen_w proc near
-  entr 0
+@@next1:
+  mov ax, word ptr [pos]
+@@right_up:
+  inc ah
+  cmp ah, 8
+  jnc @@next2
+  sub al, 1
+  jc @@next2
+  sel_white
+  cmp dx, 1
+  je @@next2
 
+  jmp @@right_up
 
-  leav
-  ret
-  endp
+@@next2:
+  mov ax, word ptr [pos]
+@@right_down:
+  inc ah
+  cmp ah, 8
+  jnc @@done
+  inc al
+  cmp al, 8
+  jnc @@done
+  sel_white
+  cmp dx, 1
+  je @@done
 
-valid_king_w proc near
-  entr 0
+  jmp @@right_down
 
-  leav
-  ret
-  endp
-
-
-valid_knight_b proc near
-  entr 0
+@@done:
 
   leav
   ret
@@ -324,6 +455,116 @@ valid_knight_b proc near
 valid_bishop_b proc near
   entr 0
 
+@@left_up:
+  sub ah, 1
+  jc @@next0
+  sub al, 1
+  jc @@next0
+  sel_black
+  cmp dx, 1
+  je @@next0
+
+  jmp @@left_up
+
+@@next0:
+  mov ax, word ptr [pos]
+@@left_down:
+  sub ah, 1
+  jc @@next1
+  inc al
+  cmp al, 8
+  jnc @@next1
+  sel_black
+  cmp dx, 1
+  je @@next1
+
+  jmp @@left_down
+
+@@next1:
+  mov ax, word ptr [pos]
+@@right_up:
+  inc ah
+  cmp ah, 8
+  jnc @@next2
+  sub al, 1
+  jc @@next2
+  sel_black
+  cmp dx, 1
+  je @@next2
+
+  jmp @@right_up
+
+@@next2:
+  mov ax, word ptr [pos]
+@@right_down:
+  inc ah
+  cmp ah, 8
+  jnc @@done
+  inc al
+  cmp al, 8
+  jnc @@done
+  sel_black
+  cmp dx, 1
+  je @@done
+
+  jmp @@right_down
+
+@@done:
+
+  leav
+  ret
+  endp
+
+;;; --------------------------
+;;; ---------- ROOK ----------
+;;; --------------------------
+
+
+valid_rook_w proc near
+  entr 0
+
+@@left:
+  sub ah, 1
+  jc @@next0
+  sel_white
+  cmp dx, 1
+  je @@next0
+  jmp @@left
+
+@@next0:
+  mov ax, word ptr [pos]
+@@right:
+  inc ah
+  cmp ah, 8
+  jnc @@next1
+  sel_white
+  cmp dx, 1
+  je @@next1
+  jmp @@right
+
+@@next1:
+  mov ax, word ptr [pos]
+@@up:
+  sub al, 1
+  jc @@next2
+  sel_white
+  cmp dx, 1
+  je @@next2
+  jmp @@up
+
+@@next2:
+  mov ax, word ptr [pos]
+@@down:
+  inc al
+  cmp al, 8
+  jnc @@done
+  sel_white
+  cmp dx, 1
+  je @@done
+  jmp @@down
+
+@@done:
+
   leav
   ret
   endp
@@ -331,6 +572,64 @@ valid_bishop_b proc near
 valid_rook_b proc near
   entr 0
 
+@@left:
+  sub ah, 1
+  jc @@next0
+  sel_black
+  cmp dx, 1
+  je @@next0
+  jmp @@left
+
+@@next0:
+  mov ax, word ptr [pos]
+@@right:
+  inc ah
+  cmp ah, 8
+  jnc @@next1
+  sel_black
+  cmp dx, 1
+  je @@next1
+  jmp @@right
+
+@@next1:
+  mov ax, word ptr [pos]
+@@up:
+  sub al, 1
+  jc @@next2
+  sel_black
+  cmp dx, 1
+  je @@next2
+  jmp @@up
+
+@@next2:
+  mov ax, word ptr [pos]
+@@down:
+  inc al
+  cmp al, 8
+  jnc @@done
+  sel_black
+  cmp dx, 1
+  je @@done
+  jmp @@down
+
+@@done:
+
+  leav
+  ret
+  endp
+
+;;; --------------------------
+;;; ---------- QUEEN ---------
+;;; --------------------------
+
+
+valid_queen_w proc near
+  entr 0
+
+  call valid_bishop_w
+  mov ax, word ptr [pos]
+  xor dx, dx
+  call valid_rook_w
 
   leav
   ret
@@ -339,13 +638,64 @@ valid_rook_b proc near
 valid_queen_b proc near
   entr 0
 
+  call valid_bishop_b
+  mov ax, word ptr [pos]
+  xor dx, dx
+  call valid_rook_b
 
   leav
   ret
   endp
 
+;;; --------------------------
+;;; ---------- KING ----------
+;;; --------------------------
+
+
+valid_king_w proc near
+  entr 0
+
+  dec al
+  sel_white
+  inc ah
+  sel_white
+  inc al
+  sel_white
+  inc al
+  sel_white
+  dec ah
+  sel_white
+  dec ah
+  sel_white
+  dec al
+  sel_white
+  dec al
+  sel_white
+
+  leav
+  ret
+  endp
+
+
 valid_king_b proc near
   entr 0
+
+  dec al
+  sel_black
+  inc ah
+  sel_black
+  inc al
+  sel_black
+  inc al
+  sel_black
+  dec ah
+  sel_black
+  dec ah
+  sel_black
+  dec al
+  sel_black
+  dec al
+  sel_black
 
   leav
   ret
