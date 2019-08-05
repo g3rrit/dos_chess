@@ -23,6 +23,10 @@
   extrn set_player_white:proc
   extrn set_player_black:proc
 
+  extrn clear_selected:proc
+
+  extrn valid_moves:proc
+
   .data
 
 ;;; the var holding the state
@@ -95,6 +99,38 @@ done_state proc near
   endp
 
 
+;;; selects piece whiteat ax
+select_white proc near
+  ;; set next state
+  mov byte ptr [game_state], 2
+
+  ;; set possible moves on board
+  call clear_selected
+  call valid_moves
+
+  ;; set selected pos
+  mov byte ptr [selected_xpos], ah
+  mov byte ptr [selected_ypos], al
+
+  ret
+  endp
+
+;;; selects piece black at ax
+select_black proc near
+  ;; set next state
+  mov byte ptr [game_state], 4
+
+  ;; set possible moves on board
+  call clear_selected
+  call valid_moves
+
+  ;; set selected pos
+  mov byte ptr [selected_xpos], ah
+  mov byte ptr [selected_ypos], al
+
+  ret
+  endp
+
 choosing_state_white proc near
   entr 0
 
@@ -114,16 +150,8 @@ choosing_state_white proc near
   cmp al, 0
   je @@done
 
-  ;; set next state
-  mov byte ptr [game_state], 2
-
-  ;; set possible moves on board
-
-  ;; set selected pos
   pop ax
-  mov byte ptr [selected_xpos], ah
-  mov byte ptr [selected_ypos], al
-
+  call select_white
 @@done:
   leav
   ret
@@ -138,8 +166,32 @@ selected_state_white proc near
   cmp dx, 1
   jne @@done
 
+  push ax
+  call board_at
   ;; check if move is possible
+  cmp ah, 1
+  je @@move_possible
 
+  ;; move not possible
+  cmp al, 0
+  je @@reset
+
+  ;; if first bit is set piece is black
+  cmp al, 8
+  jnc @@reset
+
+  pop ax
+  call select_white
+  jmp @@done
+
+@@reset:
+  mov byte ptr [game_state], 1
+  call clear_selected
+  pop ax
+  jmp @@done
+
+@@move_possible:
+  pop ax
   mov bx, ax
 
   mov ah, byte ptr [selected_xpos]
@@ -154,6 +206,9 @@ selected_state_white proc near
 
   ;; set current player on board
   call set_player_black
+
+  ;; clear board selection
+  call clear_selected
 
 @@done:
   leav
@@ -179,16 +234,8 @@ choosing_state_black proc near
   cmp al, 0
   je @@done
 
-  ;; set next state
-  mov byte ptr [game_state], 4
-
-  ;; set possible moves on board
-
-  ;; set selected pos
   pop ax
-  mov byte ptr [selected_xpos], ah
-  mov byte ptr [selected_ypos], al
-
+  call select_black
 @@done:
   leav
   ret
@@ -203,8 +250,32 @@ selected_state_black proc near
   cmp dx, 1
   jne @@done
 
+  push ax
+  call board_at
   ;; check if move is possible
+  cmp ah, 1
+  je @@move_possible
 
+  ;; move not possible
+  cmp al, 0
+  je @@reset
+
+  ;; if first bit is set piece is black
+  cmp al, 8
+  jc @@reset
+
+  pop ax
+  call select_black
+  jmp @@done
+
+@@reset:
+  mov byte ptr [game_state], 3
+  call clear_selected
+  pop ax
+  jmp @@done
+
+@@move_possible:
+  pop ax
   mov bx, ax
 
   mov ah, byte ptr [selected_xpos]
@@ -219,6 +290,9 @@ selected_state_black proc near
 
   ;; set current player on board
   call set_player_white
+
+  ;; clear board selection
+  call clear_selected
 
 @@done:
   leav

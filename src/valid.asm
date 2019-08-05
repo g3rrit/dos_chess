@@ -1,190 +1,351 @@
   include std.asm
 
-  extrn board
-  extrn board_at
+  extrn board:proc
+  extrn board_at:proc
+
+  extrn set_selected:proc
+
+  public valid_moves
 
   .data
+
+pos dw 0
 
   .code
 
 ;;; calculates all valid moves starting from a specific position
 ;;; args:
-;;;     buf xy pos as lower byte
-;;; returns:
-;;;     valid moves in buf
-;;;     move count in ax
+;;;     ax: pos
 valid_moves proc near
   entr 0
 
-buf = bp + 6 + 2
-pos = bp + 6
+  save_reg
 
-  ;; get piece at location pos to ax
-  mov ax, word ptr [board]
-  mov bx, word ptr [pos]
-  push_args<ax, bx>
-  call board_at
-
-  ;; change position to low high byte
   push ax
-  mov ax, word ptr [pos]
-  mov word ptr [pos], ax
+  call board_at
+  mov bx, ax
   pop ax
+  mov bh, 0
 
-  mov bx, 8
-  and bx, ax
+  mov word ptr [pos], ax
 
-  and ax, 111b
-
-  mov cx, word ptr [board]
-  mov dx, word ptr [buf]
-
-  cmp ax, 0
+  cmp bx, 0
   je @@empty
-  cmp ax, 1
-  je @@pawn
-  cmp ax, 2
-  je @@knight
-  cmp ax, 3
-  je @@bishop
-  cmp ax, 4
-  je @@rook
-  cmp ax, 5
-  je @@queen
-  cmp ax, 6
-  je @@king
+  cmp bx, 1
+  je @@pawn_w
+  cmp bx, 2
+  je @@knight_w
+  cmp bx, 3
+  je @@bishop_w
+  cmp bx, 4
+  je @@rook_w
+  cmp bx, 5
+  je @@queen_w
+  cmp bx, 6
+  je @@king_w
+
+  cmp bx, 9
+  je @@pawn_b
+  cmp bx, 10
+  je @@knight_b
+  cmp bx, 11
+  je @@bishop_b
+  cmp bx, 12
+  je @@rook_b
+  cmp bx, 13
+  je @@queen_b
+  cmp bx, 14
+  je @@king_b
 
 @@empty:
-  mov ax, 0
   jmp @@done
 
-@@pawn:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_pawn
+@@pawn_w:
+  call valid_pawn_w
   jmp @@done
 
-@@knight:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_knight
+@@knight_w:
+  call valid_knight_w
   jmp @@done
 
-@@bishop:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_bishop
+@@bishop_w:
+  call valid_bishop_w
   jmp @@done
 
-@@rook:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_rook
+@@rook_w:
+  call valid_rook_w
   jmp @@done
 
-@@queen:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_queen
+@@queen_w:
+  call valid_queen_w
   jmp @@done
 
-@@king:
-  mov ax, word ptr [pos]
-  push_args<cx, dx, ax, bx>
-  call valid_king
+@@king_w:
+  call valid_king_w
+  jmp @@done
+
+
+@@pawn_b:
+  call valid_pawn_b
+  jmp @@done
+
+@@knight_b:
+  call valid_knight_b
+  jmp @@done
+
+@@bishop_b:
+  call valid_bishop_b
+  jmp @@done
+
+@@rook_b:
+  call valid_rook_b
+  jmp @@done
+
+@@queen_b:
+  call valid_queen_b
+  jmp @@done
+
+@@king_b:
+  call valid_king_b
 
 @@done:
 
+  res_reg
   leav
   ret
   endp
 
-valid_pawn proc near
-  entr 2
+;;; position in ax
 
-count = bp - 2
-  mov word ptr [count], 0
+;;; selects a position if empty
+sel_empty macro
+  local done, select
+  push ax
+  call board_at
+  cmp ax, 0ffffh
+  je done
+  cmp al, 0
+  je select
+  mov dx, 1
+  jmp done
 
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
+select:
+  pop ax
+  push ax
+  call set_selected
 
-  cmp word ptr [color], 1
-  je @@black
+done:
+  pop ax
+  endm
 
-  ;; white pawn
+;;; selects a position if empty
+;;; or if black piece at location
+;;; location at ax
+sel_white macro
+  local done, select, select_p
+  push ax
+  call board_at
+  cmp ax, 0ffffh
+  je done
+  cmp al, 0
+  je select
+  cmp al, 8
+  jnc select_p
+  jmp done
 
-  ;; check if at starting pos
-  mov ax, word ptr [pos]
-  cmp al, 7
-  jne @@wnot_start
+select_p:
+  mov dx, 1
 
-@@wnot_start:
+select:
+  pop ax
+  push ax
+  call set_selected
 
-  ;; black pawn
-@@black:
+done:
+  pop ax
+  endm
 
+;;; selects a position if empty
+;;; or if white piece at location
+;;; location at ax
+sel_black macro
+  local done, select, select_p
+  push ax
+  call board_at
+  cmp ax, 0ffffh
+  je done
+  cmp al, 0
+  je select
+  cmp al, 8
+  jc select_p
+  jmp done
 
-  leav
-  ret
-  endp
+select_p:
+  mov dx, 1
 
-valid_knight proc near
+select:
+  mov dx, 1
+  pop ax
+  push ax
+  call set_selected
+
+done:
+  pop ax
+  endm
+
+valid_pawn_w proc near
   entr 0
 
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
+  dec al
+  sel_empty
+  cmp dx, 1
+  je @@no_two
+
+  cmp al, 5
+  jne @@no_two
+
+  dec al
+  sel_empty
+  inc al
+
+@@no_two:
+
+  dec ah
+  sel_white
+
+  add ah, 2
+  sel_white
 
   leav
   ret
   endp
 
-valid_bishop proc near
+valid_pawn_b proc near
   entr 0
 
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
+  inc al
+  sel_empty
+  cmp dx, 1
+  je @@no_two
+
+  cmp al, 2
+  jne @@no_two
+
+  inc al
+  sel_empty
+  dec al
+
+@@no_two:
+
+  dec ah
+  sel_black
+
+  add ah, 2
+  sel_black
 
   leav
   ret
   endp
 
-valid_rook proc near
+valid_knight_w proc near
   entr 0
 
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
+  sub al, 2
+  add ah, 1
+  sel_white
 
+  inc ah
+  inc al
+  sel_white
+
+  add al, 2
+  sel_white
+
+  inc al
+  dec ah
+  sel_white
+
+  sub ah, 2
+  sel_white
+
+  dec al
+  dec ah
+  sel_white
+
+  sub al, 2
+  sel_white
+
+  dec al
+  inc ah
+  sel_white
+
+  leav
+  ret
+  endp
+
+valid_bishop_w proc near
+  entr 0
+
+  leav
+  ret
+  endp
+
+valid_rook_w proc near
+  entr 0
 
 
   leav
   ret
   endp
 
-valid_queen proc near
+valid_queen_w proc near
   entr 0
-
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
-
 
 
   leav
   ret
   endp
 
-valid_king proc near
+valid_king_w proc near
   entr 0
 
-buf = bp + 6 + 4
-pos = bp + 6 + 2
-color = bp + 6
+  leav
+  ret
+  endp
 
 
+valid_knight_b proc near
+  entr 0
+
+  leav
+  ret
+  endp
+
+valid_bishop_b proc near
+  entr 0
+
+  leav
+  ret
+  endp
+
+valid_rook_b proc near
+  entr 0
+
+
+  leav
+  ret
+  endp
+
+valid_queen_b proc near
+  entr 0
+
+
+  leav
+  ret
+  endp
+
+valid_king_b proc near
+  entr 0
 
   leav
   ret

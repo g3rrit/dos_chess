@@ -11,6 +11,10 @@
   public set_player_black
   public get_player
 
+  public set_selected
+  public set_unselected
+  public clear_selected
+
   public board
 
   .data
@@ -58,22 +62,6 @@ player db 0
 
   .code
 
-set_player_white proc near
-  mov byte ptr [player], 0
-  ret
-  endp
-
-set_player_black proc near
-  mov byte ptr [player], 1
-  ret
-  endp
-
-get_player proc near
-  xor ax, ax
-  mov al, byte ptr [player]
-  ret
-  endp
-
 ;;; converts position xy
 ;;; to a representation in al
 ;;; describing the location on the board 0 - 63
@@ -101,6 +89,88 @@ board_pos_xy macro
   pop cx
   pop dx
   endm
+
+;;; marks piece at location ax as selected
+;;; args:
+;;;     ax: pos
+set_selected proc near
+  push ax
+  push bx
+  push cx
+  mov cx, ax
+  call board_at
+  cmp ax, 0ffffh
+  je @@done
+
+  mov ah, 1
+  mov bx, ax
+  mov ax, cx
+  call board_set
+
+@@done:
+  pop cx
+  pop bx
+  pop ax
+  ret
+  endp
+
+;;; marks piece at location ax as unselected
+;;; args:
+;;;     ax: pos
+set_unselected proc near
+  push ax
+  push bx
+  push cx
+  mov cx, ax
+  call board_at
+  cmp ax, 0ffffh
+  je @@done
+
+  mov ah, 0
+  mov bx, ax
+  mov ax, cx
+  call board_set
+
+@@done:
+  pop cx
+  pop bx
+  pop ax
+  ret
+  endp
+
+clear_selected proc near
+  push ax
+  push bx
+
+  mov bx, 0
+@@loop:
+  mov ax, bx
+  board_pos_xy
+  call set_unselected
+  inc bx
+  cmp bx, 64
+  jne @@loop
+
+  pop bx
+  pop ax
+  ret
+  endp
+
+set_player_white proc near
+  mov byte ptr [player], 0
+  ret
+  endp
+
+set_player_black proc near
+  mov byte ptr [player], 1
+  ret
+  endp
+
+get_player proc near
+  xor ax, ax
+  mov al, byte ptr [player]
+  ret
+  endp
 
 ;;; initializes board
 board_init proc near
