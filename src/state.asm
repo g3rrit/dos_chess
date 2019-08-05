@@ -23,7 +23,7 @@
   .data
 
 ;;; the var holding the state
-;;;  end (0) - choosing (1) - selected (2) - ai (3) - done (4)
+;;;  end (0) - choosing_white (1) - selected_white (2) - choosing_black (3) - selected_black (4) - done (5)
 game_state db 1
 
 
@@ -42,24 +42,30 @@ main_loop proc near
   je @@end
 
   cmp byte ptr [game_state], 1
-  je @@next_choosing
+  je @@next_choosing_white
   cmp byte ptr [game_state], 2
-  je @@next_selected
+  je @@next_selected_white
   cmp byte ptr [game_state], 3
-  je @@next_ai
+  je @@next_choosing_black
   cmp byte ptr [game_state], 4
+  je @@next_selected_black
+  cmp byte ptr [game_state], 5
   je @@next_done
+
 
 ;;; TODO: invalid state here exit with error
 
-@@next_choosing:
-  call choosing_state
+@@next_choosing_white:
+  call choosing_state_white
   jmp @@next_state
-@@next_selected:
-  call selected_state
+@@next_selected_white:
+  call selected_state_white
   jmp @@next_state
-@@next_ai:
-  call ai_state
+@@next_choosing_black:
+  call choosing_state_black
+  jmp @@next_state
+@@next_selected_black:
+  call selected_state_black
   jmp @@next_state
 @@next_done:
   call done_state
@@ -86,7 +92,7 @@ done_state proc near
   endp
 
 
-choosing_state proc near
+choosing_state_white proc near
   entr 0
 
   ;; ah - xpos (0-7) | bl - ypos (0-7)
@@ -105,10 +111,12 @@ choosing_state proc near
   cmp ax, 0
   je @@done
 
+  ;; set next state
   mov byte ptr [game_state], 2
 
-  ;; TODO: calculate possible moves
+  ;; set possible moves on board
 
+  ;; set selected pos
   pop ax
   mov byte ptr [selected_xpos], ah
   mov byte ptr [selected_ypos], al
@@ -118,7 +126,7 @@ choosing_state proc near
   ret
   endp
 
-selected_state proc near
+selected_state_white proc near
   entr 0
 
   ;; ah - xpos (0-7) | al - ypos (0-7)
@@ -127,29 +135,85 @@ selected_state proc near
   cmp dx, 1
   jne @@done
 
-  ;; TODO: check if valid move
+  ;; check if move is possible
 
   mov bx, ax
 
   mov ah, byte ptr [selected_xpos]
   mov al, byte ptr [selected_ypos]
 
+  ;; check if black king is checkmate
+
   call board_move
 
-  ;; TODO: change state to ai state
-  mov byte ptr [game_state], 1
+  ;; change state selecting black
+  mov byte ptr [game_state], 3
 
 @@done:
   leav
   ret
   endp
 
-ai_state proc near
+choosing_state_black proc near
   entr 0
 
+  ;; ah - xpos (0-7) | bl - ypos (0-7)
+  ;; dx - 1 valid | 0 invalid
+  call mouse_board_pos
+  cmp dx, 1
+  jne @@done
+
+  ;; check if selected piece is black
+  push ax
+  call board_at
+
+  ;; if first bit is set piece is black
+  cmp ax, 8
+  jc @@done
+  cmp ax, 0
+  je @@done
+
+  ;; set next state
+  mov byte ptr [game_state], 4
+
+  ;; set possible moves on board
+
+  ;; set selected pos
+  pop ax
+  mov byte ptr [selected_xpos], ah
+  mov byte ptr [selected_ypos], al
+
+@@done:
   leav
   ret
   endp
 
+selected_state_black proc near
+  entr 0
+
+  ;; ah - xpos (0-7) | al - ypos (0-7)
+  ;; dx - 1 valid | 0 invalid
+  call mouse_board_pos
+  cmp dx, 1
+  jne @@done
+
+  ;; check if move is possible
+
+  mov bx, ax
+
+  mov ah, byte ptr [selected_xpos]
+  mov al, byte ptr [selected_ypos]
+
+  ;; check if white king is checkmate
+
+  call board_move
+
+  ;; change state selecting white
+  mov byte ptr [game_state], 1
+
+@@done:
+  leav
+  ret
+  endp
 
   end
