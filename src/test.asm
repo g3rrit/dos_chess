@@ -12,6 +12,8 @@ include std.asm
 
   extrn set_flag0:proc
 
+  extrn select_moves:proc
+
   extrn valid_moves:proc
 
 
@@ -21,10 +23,10 @@ include std.asm
 
 testp proc near
 
-  mov ah, 2
+  mov ah, 4
   mov al, 7
 
-  mov bh, 3
+  mov bh, 0
   mov bl, 3
   call board_move
 
@@ -32,8 +34,15 @@ testp proc near
 
   mov ah, 1
   mov al, 1
-  mov bx, offset set_flag0
+  mov bx, offset select_moves
   call valid_moves
+
+  mov ah, 0
+  mov al, 3
+  mov bx, offset select_moves
+  call valid_moves
+
+
 
   ;; call mouse_board_pos
   ;; call mouse_board_pos

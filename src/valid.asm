@@ -134,10 +134,7 @@ sel_empty macro
 select:
   pop ax
   push ax
-  push bx
-  mov bx, cx
-  call bx
-  pop bx
+  call cx
 
 done:
   pop ax
@@ -162,10 +159,7 @@ sel_white macro
 select:
   pop ax
   push ax
-  push bx
-  mov bx, cx
-  call bx
-  pop bx
+  call cx
 
 done:
   pop ax
@@ -190,10 +184,7 @@ sel_black macro
 select:
   pop ax
   push ax
-  push bx
-  mov bx, cx
-  call bx
-  pop bx
+  call cx
 
 done:
   pop ax
@@ -222,10 +213,7 @@ select_p:
 select:
   pop ax
   push ax
-  push bx
-  mov bx, cx
-  call bx
-  pop bx
+  call cx
 
 done:
   pop ax
@@ -254,10 +242,7 @@ select:
   mov dx, 1
   pop ax
   push ax
-  push bx
-  mov bx, cx
-  call bx
-  pop bx
+  call cx
 
 done:
   pop ax
@@ -269,6 +254,8 @@ done:
 
 valid_pawn_w proc near
   entr 0
+
+  mov bx, ax
 
   dec al
   sel_empty
@@ -296,6 +283,8 @@ valid_pawn_w proc near
 
 valid_pawn_b proc near
   entr 0
+
+  mov bx, ax
 
   inc al
   sel_empty
@@ -328,6 +317,8 @@ valid_pawn_b proc near
 
 valid_knight_w proc near
   entr 0
+
+  mov bx, ax
 
   sub al, 2
   add ah, 1
@@ -364,6 +355,8 @@ valid_knight_w proc near
 
 valid_knight_b proc near
   entr 0
+
+  mov bx, ax
 
   sub al, 2
   add ah, 1
@@ -405,6 +398,8 @@ valid_knight_b proc near
 
 valid_bishop_w proc near
   entr 0
+
+  mov bx, ax
 
   push ax
 
@@ -474,6 +469,8 @@ valid_bishop_w proc near
 
 valid_bishop_b proc near
   entr 0
+
+  mov bx, ax
 
   push ax
 
@@ -549,6 +546,8 @@ valid_bishop_b proc near
 valid_rook_w proc near
   entr 0
 
+  mov bx, ax
+
   push ax
 
 @@left:
@@ -603,6 +602,8 @@ valid_rook_w proc near
 
 valid_rook_b proc near
   entr 0
+
+  mov bx, ax
 
   push ax
 
@@ -664,6 +665,8 @@ valid_rook_b proc near
 valid_queen_w proc near
   entr 0
 
+  mov bx, ax
+
   push ax
   call valid_bishop_w
   pop ax
@@ -676,6 +679,8 @@ valid_queen_w proc near
 
 valid_queen_b proc near
   entr 0
+
+  mov bx, ax
 
   push ax
   call valid_bishop_b
@@ -694,6 +699,8 @@ valid_queen_b proc near
 
 valid_king_w proc near
   entr 0
+
+  mov bx, ax
 
   dec al
   sel_white
@@ -719,6 +726,8 @@ valid_king_w proc near
 
 valid_king_b proc near
   entr 0
+
+  mov bx, ax
 
   dec al
   sel_black

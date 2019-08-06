@@ -100,7 +100,7 @@ main:
 ;;;   STACK_SEGMENT
 ;;;---------------------------------------
 stseg segment stack use16 'stack'
-  dw 200h dup (?)
+  dw 800h dup (?)
   ends
 ;;;---------------------------------------
 

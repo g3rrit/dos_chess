@@ -25,7 +25,7 @@
 
   extrn clear_flags:proc
 
-  extrn set_flag0:proc
+  extrn select_moves:proc
 
   extrn valid_moves:proc
 
@@ -109,7 +109,7 @@ select_white proc near
   ;; set possible moves on board
   call clear_flags
   push bx
-  mov bx, offset set_flag0
+  mov bx, offset select_moves
   call valid_moves
   pop bx
 
@@ -128,7 +128,7 @@ select_black proc near
   ;; set possible moves on board
   call clear_flags
   push bx
-  mov bx, offset set_flag0
+  mov bx, offset select_moves
   call valid_moves
   pop bx
 

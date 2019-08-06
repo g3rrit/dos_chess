@@ -7,6 +7,8 @@
   public board_set
   public board_move
 
+  public board_get_king
+
   public set_player_white
   public set_player_black
   public get_player
@@ -28,6 +30,8 @@
 
   public clear_flags
 
+  public board_save
+  public board_restore
 
   public board
 
@@ -68,6 +72,8 @@
 ;;; board
 board db 64 dup (0)
 
+board_buf db 64 dup (0)
+
 ;;; current_player 0 - white | 1 - black
 player db 0
 
@@ -103,6 +109,30 @@ board_pos_xy macro
   pop cx
   pop dx
   endm
+
+;;; saves the state of the board to a
+;;; temporary location
+board_save proc near
+  save_reg
+  mov ax, offset board
+  mov bx, offset board_buf
+  mov cx, 64
+  memcpy
+  res_reg
+  ret
+  endp
+
+
+;;; restores the state of the board
+board_restore proc near
+  save_reg
+  mov ax, offset board_buf
+  mov bx, offset board
+  mov cx, 64
+  memcpy
+  res_reg
+  ret
+  endp
 
 set_flag0 proc near
   push bx
@@ -365,9 +395,8 @@ board_init proc near
 ;;;     bx: dest
 board_move proc near
   entr 0
+  save_reg
 
-  push cx
-  push dx
   mov cx, ax
   mov dx, bx
   call board_at
@@ -380,8 +409,50 @@ board_move proc near
   mov ax, dx
   call board_set
 
+  res_reg
+  leav
+  ret
+  endp
+
+;;; returns the state of kind of
+;;; args:
+;;;     ax: 0 white king
+;;;     ax: 1 black king
+board_get_king proc near
+  entr 0
+  push bx
+  push cx
+  push dx
+
+  mov bx, ax
+  mov ax, 0
+  mov cx, 0
+
+  cmp bx, 0
+  je @@white
+
+  ;; black king
+@@black:
+  call board_at_pos
+  cmp al, 0eh
+  je @@done
+  inc cx
+  mov ax, cx
+  jmp @@black
+
+  ;; white king
+@@white:
+  call board_at_pos
+  cmp al, 6
+  je @@done
+  inc cx
+  mov ax, cx
+  jmp @@white
+
+@@done:
   pop dx
   pop cx
+  pop bx
   leav
   ret
   endp

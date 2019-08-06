@@ -11,4 +11,5 @@ tlib.exe build\mlib -+build\tileset >> build\out.txt
 tlib.exe build\mlib -+build\board >> build\out.txt
 tlib.exe build\mlib -+build\util >> build\out.txt
 tlib.exe build\mlib -+build\valid >> build\out.txt
+tlib.exe build\mlib -+build\vproc >> build\out.txt
 tlink.exe build\main.obj build\mlib.lib >> build\out.txt

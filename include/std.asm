@@ -28,6 +28,28 @@ byte_to_word macro
   pop cx
   endm
 
+;;; ax: src
+;;; bx: dest
+;;; cx: count
+memcpy macro
+  push ax
+  push bx
+  push cx
+  mov di, ax
+@@loop:
+  mov al, byte ptr [di]
+  mov byte ptr [bx], al
+  inc bx
+  inc di
+  dec cx
+  cmp cx, 0
+  jne @@loop
+
+  pop cx
+  pop bx
+  pop ax
+  endm
+
 ;;; pushed args to stack
 push_args macro args
   mov word ptr [stack_arg_count], 0
