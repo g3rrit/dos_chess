@@ -10,6 +10,8 @@ include std.asm
   extrn draw_board:proc
   extrn cboard_at:proc
 
+  extrn set_flag0:proc
+
   extrn valid_moves:proc
 
 
@@ -28,8 +30,9 @@ testp proc near
 
   call draw_board
 
-  mov ah, 3
-  mov al, 3
+  mov ah, 1
+  mov al, 1
+  mov bx, offset set_flag0
   call valid_moves
 
   ;; call mouse_board_pos

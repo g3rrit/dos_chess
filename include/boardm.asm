@@ -1,5 +1,11 @@
 
 
+board_flag0 = 8
+board_flag1 = 4
+board_flag2 = 2
+board_flag3 = 1
+
+
 ;;; converts a location x y in ax bx
 ;;; to a location xy in al
 board_dword_byte macro

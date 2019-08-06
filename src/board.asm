@@ -11,9 +11,23 @@
   public set_player_black
   public get_player
 
-  public set_selected
-  public set_unselected
-  public clear_selected
+  public set_flag0
+  public set_flag1
+  public set_flag2
+  public set_flag3
+
+  public unset_flag0
+  public unset_flag1
+  public unset_flag2
+  public unset_flag3
+
+  public clear_flag0
+  public clear_flag1
+  public clear_flag2
+  public clear_flag3
+
+  public clear_flags
+
 
   public board
 
@@ -90,55 +104,179 @@ board_pos_xy macro
   pop dx
   endm
 
-;;; marks piece at location ax as selected
+set_flag0 proc near
+  push bx
+  mov bx, 8
+  call set_flag
+  pop bx
+  ret
+  endp
+
+set_flag1 proc near
+  push bx
+  mov bx, 4
+  call set_flag
+  pop bx
+  ret
+  endp
+
+set_flag2 proc near
+  push bx
+  mov bx, 2
+  call set_flag
+  pop bx
+  ret
+  endp
+
+set_flag3 proc near
+  push bx
+  mov bx, 1
+  call set_flag
+  pop bx
+  ret
+  endp
+
+unset_flag0 proc near
+  push bx
+  mov bx, 8
+  call unset_flag
+  pop bx
+  ret
+  endp
+
+unset_flag1 proc near
+  push bx
+  mov bx, 4
+  call unset_flag
+  pop bx
+  ret
+  endp
+
+unset_flag2 proc near
+  push bx
+  mov bx, 2
+  call unset_flag
+  pop bx
+  ret
+  endp
+
+unset_flag3 proc near
+  push bx
+  mov bx, 1
+  call set_flag
+  pop bx
+  ret
+  endp
+
+clear_flag0 proc near
+  push bx
+  mov bx, 8
+  call clear_flag
+  pop bx
+  ret
+  endp
+
+clear_flag1 proc near
+  push bx
+  mov bx, 4
+  call clear_flag
+  pop bx
+  ret
+  endp
+
+clear_flag2 proc near
+  push bx
+  mov bx, 2
+  call clear_flag
+  pop bx
+  ret
+  endp
+
+clear_flag3 proc near
+  push bx
+  mov bx, 1
+  call clear_flag
+  pop bx
+  ret
+  endp
+
+;;; sets flag in board
 ;;; args:
 ;;;     ax: pos
-set_selected proc near
+;;;     bx: flag
+set_flag proc near
   push ax
-  push bx
   push cx
   mov cx, ax
   call board_at
   cmp ax, 0ffffh
   je @@done
 
-  mov ah, 1
+  or ah, bl
   mov bx, ax
   mov ax, cx
   call board_set
 
 @@done:
   pop cx
-  pop bx
   pop ax
   ret
   endp
 
-;;; marks piece at location ax as unselected
+;;; clears flag
 ;;; args:
 ;;;     ax: pos
-set_unselected proc near
+;;;     bx: flag
+unset_flag proc near
   push ax
-  push bx
   push cx
   mov cx, ax
   call board_at
   cmp ax, 0ffffh
   je @@done
 
-  mov ah, 0
+  xor bl, 0fh
+  and ah, bl
   mov bx, ax
   mov ax, cx
   call board_set
 
 @@done:
   pop cx
+  pop ax
+  ret
+  endp
+
+;;; clears the complete board from the specific flag
+;;; args:
+;;;     ax: pos
+;;;     bx: flag
+clear_flag proc near
+  push ax
+  push bx
+  push cx
+  mov bx, cx
+
+  mov bx, 0
+@@loop:
+  mov ax, bx
+  board_pos_xy
+  push bx
+  mov bx, cx
+  call unset_flag
+  pop bx
+  inc bx
+  cmp bx, 64
+  jne @@loop
+
+  pop cx
   pop bx
   pop ax
   ret
   endp
 
-clear_selected proc near
+;;; clears all flags
+clear_flags proc near
   push ax
   push bx
 
@@ -146,7 +284,10 @@ clear_selected proc near
 @@loop:
   mov ax, bx
   board_pos_xy
-  call set_unselected
+  push bx
+  mov bx, 0fh
+  call unset_flag
+  pop bx
   inc bx
   cmp bx, 64
   jne @@loop
@@ -155,6 +296,7 @@ clear_selected proc near
   pop ax
   ret
   endp
+
 
 set_player_white proc near
   mov byte ptr [player], 0

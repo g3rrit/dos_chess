@@ -80,7 +80,7 @@ main:
 
   ;; -- TESTING --
 
-  ;; call testp
+  call testp
 
   ;; -- TESTING --
 

@@ -3,31 +3,30 @@
   extrn board:proc
   extrn board_at:proc
 
-  extrn set_selected:proc
+  extrn set_flag0:proc
 
   public valid_moves
 
   .data
-
-pos dw 0
 
   .code
 
 ;;; calculates all valid moves starting from a specific position
 ;;; args:
 ;;;     ax: pos
+;;;     bx: proc to exec on set
 valid_moves proc near
   entr 0
 
   save_reg
+
+  mov cx, bx
 
   push ax
   call board_at
   mov bx, ax
   pop ax
   mov bh, 0
-
-  mov word ptr [pos], ax
 
   xor dx, dx
 
@@ -135,7 +134,10 @@ sel_empty macro
 select:
   pop ax
   push ax
-  call set_selected
+  push bx
+  mov bx, cx
+  call bx
+  pop bx
 
 done:
   pop ax
@@ -160,7 +162,10 @@ sel_white macro
 select:
   pop ax
   push ax
-  call set_selected
+  push bx
+  mov bx, cx
+  call bx
+  pop bx
 
 done:
   pop ax
@@ -185,7 +190,10 @@ sel_black macro
 select:
   pop ax
   push ax
-  call set_selected
+  push bx
+  mov bx, cx
+  call bx
+  pop bx
 
 done:
   pop ax
@@ -214,7 +222,10 @@ select_p:
 select:
   pop ax
   push ax
-  call set_selected
+  push bx
+  mov bx, cx
+  call bx
+  pop bx
 
 done:
   pop ax
@@ -243,7 +254,10 @@ select:
   mov dx, 1
   pop ax
   push ax
-  call set_selected
+  push bx
+  mov bx, cx
+  call bx
+  pop bx
 
 done:
   pop ax
@@ -392,6 +406,8 @@ valid_knight_b proc near
 valid_bishop_w proc near
   entr 0
 
+  push ax
+
 @@left_up:
   sub ah, 1
   jc @@next0
@@ -404,7 +420,8 @@ valid_bishop_w proc near
   jmp @@left_up
 
 @@next0:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@left_down:
   sub ah, 1
   jc @@next1
@@ -418,7 +435,8 @@ valid_bishop_w proc near
   jmp @@left_down
 
 @@next1:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right_up:
   inc ah
   cmp ah, 8
@@ -432,7 +450,8 @@ valid_bishop_w proc near
   jmp @@right_up
 
 @@next2:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right_down:
   inc ah
   cmp ah, 8
@@ -447,6 +466,7 @@ valid_bishop_w proc near
   jmp @@right_down
 
 @@done:
+  pop ax
 
   leav
   ret
@@ -455,6 +475,8 @@ valid_bishop_w proc near
 valid_bishop_b proc near
   entr 0
 
+  push ax
+
 @@left_up:
   sub ah, 1
   jc @@next0
@@ -467,7 +489,8 @@ valid_bishop_b proc near
   jmp @@left_up
 
 @@next0:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@left_down:
   sub ah, 1
   jc @@next1
@@ -481,7 +504,8 @@ valid_bishop_b proc near
   jmp @@left_down
 
 @@next1:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right_up:
   inc ah
   cmp ah, 8
@@ -495,7 +519,8 @@ valid_bishop_b proc near
   jmp @@right_up
 
 @@next2:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right_down:
   inc ah
   cmp ah, 8
@@ -510,6 +535,7 @@ valid_bishop_b proc near
   jmp @@right_down
 
 @@done:
+  pop ax
 
   leav
   ret
@@ -523,6 +549,8 @@ valid_bishop_b proc near
 valid_rook_w proc near
   entr 0
 
+  push ax
+
 @@left:
   sub ah, 1
   jc @@next0
@@ -532,7 +560,8 @@ valid_rook_w proc near
   jmp @@left
 
 @@next0:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right:
   inc ah
   cmp ah, 8
@@ -543,7 +572,8 @@ valid_rook_w proc near
   jmp @@right
 
 @@next1:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@up:
   sub al, 1
   jc @@next2
@@ -553,7 +583,8 @@ valid_rook_w proc near
   jmp @@up
 
 @@next2:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@down:
   inc al
   cmp al, 8
@@ -564,6 +595,7 @@ valid_rook_w proc near
   jmp @@down
 
 @@done:
+  pop ax
 
   leav
   ret
@@ -572,6 +604,8 @@ valid_rook_w proc near
 valid_rook_b proc near
   entr 0
 
+  push ax
+
 @@left:
   sub ah, 1
   jc @@next0
@@ -581,7 +615,8 @@ valid_rook_b proc near
   jmp @@left
 
 @@next0:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@right:
   inc ah
   cmp ah, 8
@@ -592,7 +627,8 @@ valid_rook_b proc near
   jmp @@right
 
 @@next1:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@up:
   sub al, 1
   jc @@next2
@@ -602,7 +638,8 @@ valid_rook_b proc near
   jmp @@up
 
 @@next2:
-  mov ax, word ptr [pos]
+  pop ax
+  push ax
 @@down:
   inc al
   cmp al, 8
@@ -613,6 +650,7 @@ valid_rook_b proc near
   jmp @@down
 
 @@done:
+  pop ax
 
   leav
   ret
@@ -626,8 +664,9 @@ valid_rook_b proc near
 valid_queen_w proc near
   entr 0
 
+  push ax
   call valid_bishop_w
-  mov ax, word ptr [pos]
+  pop ax
   xor dx, dx
   call valid_rook_w
 
@@ -638,8 +677,9 @@ valid_queen_w proc near
 valid_queen_b proc near
   entr 0
 
+  push ax
   call valid_bishop_b
-  mov ax, word ptr [pos]
+  pop ax
   xor dx, dx
   call valid_rook_b
 

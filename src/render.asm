@@ -1,5 +1,6 @@
   include std.asm
   include tilem.asm
+  include boardm.asm
 
   public draw_rect
   public draw_filled_rect
@@ -158,7 +159,7 @@ draw_piece proc near
   je @@black_sq
 
   ;; white square
-  cmp ah, 1
+  cmp ah, board_flag0
   je @@white_sel
 
   mov ax, tile_empty_w
@@ -171,7 +172,7 @@ draw_piece proc near
   ;; black square
 @@black_sq:
 
-  cmp ah, 1
+  cmp ah, board_flag0
   je @@black_sel
 
   mov ax, tile_empty_b

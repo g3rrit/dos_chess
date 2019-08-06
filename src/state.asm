@@ -23,7 +23,9 @@
   extrn set_player_white:proc
   extrn set_player_black:proc
 
-  extrn clear_selected:proc
+  extrn clear_flags:proc
+
+  extrn set_flag0:proc
 
   extrn valid_moves:proc
 
@@ -105,8 +107,11 @@ select_white proc near
   mov byte ptr [game_state], 2
 
   ;; set possible moves on board
-  call clear_selected
+  call clear_flags
+  push bx
+  mov bx, offset set_flag0
   call valid_moves
+  pop bx
 
   ;; set selected pos
   mov byte ptr [selected_xpos], ah
@@ -121,8 +126,11 @@ select_black proc near
   mov byte ptr [game_state], 4
 
   ;; set possible moves on board
-  call clear_selected
+  call clear_flags
+  push bx
+  mov bx, offset set_flag0
   call valid_moves
+  pop bx
 
   ;; set selected pos
   mov byte ptr [selected_xpos], ah
@@ -169,7 +177,7 @@ selected_state_white proc near
   push ax
   call board_at
   ;; check if move is possible
-  cmp ah, 1
+  cmp ah, board_flag0
   je @@move_possible
 
   ;; move not possible
@@ -186,7 +194,7 @@ selected_state_white proc near
 
 @@reset:
   mov byte ptr [game_state], 1
-  call clear_selected
+  call clear_flags
   pop ax
   jmp @@done
 
@@ -208,7 +216,7 @@ selected_state_white proc near
   call set_player_black
 
   ;; clear board selection
-  call clear_selected
+  call clear_flags
 
 @@done:
   leav
@@ -253,7 +261,7 @@ selected_state_black proc near
   push ax
   call board_at
   ;; check if move is possible
-  cmp ah, 1
+  cmp ah, board_flag0
   je @@move_possible
 
   ;; move not possible
@@ -270,7 +278,7 @@ selected_state_black proc near
 
 @@reset:
   mov byte ptr [game_state], 3
-  call clear_selected
+  call clear_flags
   pop ax
   jmp @@done
 
@@ -292,7 +300,7 @@ selected_state_black proc near
   call set_player_white
 
   ;; clear board selection
-  call clear_selected
+  call clear_flags
 
 @@done:
   leav
