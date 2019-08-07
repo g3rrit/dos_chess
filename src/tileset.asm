@@ -8,7 +8,7 @@
   .data
 
 tileset_width = 96
-tileset_height = 128
+tileset_height = 89
 tileset_size = tileset_width * tileset_height
 
 tileset_path db "res\tileset.bmp", 0
@@ -41,14 +41,13 @@ tile_empty_ws dw 60, 32, 20, 20
 
 tile_empty dw 40, 32, 20, 20
 
-tile_indicator_hb dw 0, 52, 40, 8
-tile_indicator_hw dw 0, 60, 40, 8
+tile_exit dw 80, 32, 10, 10
 
-tile_indicator_vb dw 0, 68, 8, 40
-tile_indicator_vw dw 8, 68, 8, 40
+tile_white_wins dw 0, 52, 96, 12
+tile_black_wins dw 0, 64, 96, 12
+tile_press_exit dw 0, 76, 96, 13
 
-
-tile_map dw tile_empty, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w, tile_indicator_hw, tile_indicator_hb, tile_indicator_vw, tile_indicator_vb, tile_empty_ws, tile_empty_bs
+tile_map dw tile_empty, tile_pawn_b, tile_knight_b, tile_bishop_b, tile_rook_b, tile_queen_b, tile_king_b, tile_empty_w, tile_empty_b, tile_pawn_w, tile_knight_w, tile_bishop_w, tile_rook_w, tile_queen_w, tile_king_w, tile_black_wins, tile_white_wins, tile_press_exit, tile_empty_ws, tile_empty_bs, tile_exit
 
 
 ;;; --  ----------------------------------

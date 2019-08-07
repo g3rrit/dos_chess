@@ -7,6 +7,7 @@
   extrn tileset_load:proc
   extrn board_init:proc
   extrn draw_board:proc
+  extrn draw_exit_button:proc
 
   extrn mouse_init:proc
   extrn mouse_delete:proc
@@ -47,6 +48,9 @@ initp proc near
   ;; initialize board
   call board_init
 
+  ;; draw exit button
+  call draw_exit_button
+
   ;; draw board
   call draw_board
 
@@ -80,17 +84,12 @@ main:
 
   ;; -- TESTING --
 
-  call testp
+  ;; call testp
 
   ;; -- TESTING --
 
   ;; start main loop
   call main_loop
-
-
-  ;; exit on keyboard press
-  mov ah, 0
-  int 16h
 
   ;; -- --------------------------------
 

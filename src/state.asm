@@ -10,15 +10,22 @@
 ;;;
 
 
-  include std.asm
-  include boardm.asm
+include std.asm
+include boardm.asm
+include renderm.asm
+include tilem.asm
 
   public main_loop
 
   extrn mouse_board_pos:proc
+  extrn mouse_pos:proc
   extrn board_at:proc
   extrn board_move:proc
   extrn draw_board:proc
+
+  extrn tile_draw:proc
+
+  extrn draw_filled_rect:proc
 
   extrn set_player_white:proc
   extrn set_player_black:proc
@@ -29,11 +36,18 @@
 
   extrn valid_moves:proc
 
+  extrn checkmate_w:proc
+  extrn checkmate_b:proc
+
   .data
 
 ;;; the var holding the state
 ;;;  end (0) - choosing_white (1) - selected_white (2) - choosing_black (3) - selected_black (4) - done (5)
 game_state db 1
+
+;;; the winner of the game
+;;; white (0) - black (1)
+winner db 0
 
 
 selected_xpos db 0
@@ -41,6 +55,49 @@ selected_ypos db 0
 
   .code
 
+check_exit macro
+  local noexit
+  cmp dx, 1
+  je noexit
+
+  cmp ax, 10
+  jnc noexit
+  cmp bx, 10
+  jnc noexit
+
+  mov byte ptr [game_state], 0
+  jmp @@done
+
+noexit:
+  endm
+
+ccheckmate_w macro
+  local isncm
+  push ax
+  call checkmate_w
+  cmp ax, 0
+  jne isncm
+
+  mov byte ptr [winner], 1
+  jmp @@checkmate
+
+isncm:
+  pop ax
+  endm
+
+ccheckmate_b macro
+  local isncm
+  push ax
+  call checkmate_b
+  cmp ax, 0
+  jne isncm
+
+  mov byte ptr [winner], 0
+  jmp @@checkmate
+
+isncm:
+  pop ax
+  endm
 
 main_loop proc near
   entr 0
@@ -65,24 +122,32 @@ main_loop proc near
 ;;; TODO: invalid state here exit with error
 
 @@next_choosing_white:
+  ccheckmate_w
   call choosing_state_white
   jmp @@next_state
 @@next_selected_white:
+  ccheckmate_w
   call selected_state_white
   jmp @@next_state
 @@next_choosing_black:
+  ccheckmate_b
   call choosing_state_black
   jmp @@next_state
 @@next_selected_black:
+  ccheckmate_b
   call selected_state_black
   jmp @@next_state
 @@next_done:
   call done_state
-
+  jmp @@end
 
 @@next_state:
   call draw_board
 
+  jmp @@next_it
+
+@@checkmate:
+  mov byte ptr [game_state], 5
   jmp @@next_it
 
 @@end:
@@ -94,14 +159,43 @@ main_loop proc near
 done_state proc near
   entr 0
 
+  disable_cursor
+
+  ;; draw game over banner
+  cmp byte ptr [winner], 0
+  je @@white
+
+  mov ax, tile_black_wins
+  jmp @@next
+
+@@white:
+  mov ax, tile_white_wins
+
+@@next:
+
+  push_args<ax, <board_xpos + (board_width / 2) - 47>, <board_ypos + (board_height / 2) - 12>>
+  call tile_draw
+  pop_args
+
+  mov ax, tile_press_exit
+  push_args<ax, <board_xpos + (board_width / 2) - 47>, <board_ypos + (board_height / 2)>>
+  call tile_draw
+  pop_args
+
   mov byte ptr [game_state], 0
+
+  enable_cursor
+
+  ;; exit on keyboard press
+  mov ah, 0
+  int 16h
 
   leav
   ret
   endp
 
 
-;;; selects piece whiteat ax
+;;; selects piece white at ax
 select_white proc near
   ;; set next state
   mov byte ptr [game_state], 2
@@ -145,8 +239,7 @@ choosing_state_white proc near
   ;; ah - xpos (0-7) | bl - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
-  cmp dx, 1
-  jne @@done
+  check_exit
 
   ;; check if selected piece is white
   push ax
@@ -171,8 +264,7 @@ selected_state_white proc near
   ;; ah - xpos (0-7) | al - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
-  cmp dx, 1
-  jne @@done
+  check_exit
 
   push ax
   call board_at
@@ -229,8 +321,7 @@ choosing_state_black proc near
   ;; ah - xpos (0-7) | bl - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
-  cmp dx, 1
-  jne @@done
+  check_exit
 
   ;; check if selected piece is black
   push ax
@@ -255,8 +346,7 @@ selected_state_black proc near
   ;; ah - xpos (0-7) | al - ypos (0-7)
   ;; dx - 1 valid | 0 invalid
   call mouse_board_pos
-  cmp dx, 1
-  jne @@done
+  check_exit
 
   push ax
   call board_at

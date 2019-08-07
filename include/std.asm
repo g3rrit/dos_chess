@@ -61,7 +61,7 @@ push_args macro args
   endm
 
 ;;; pops count words from stack
-pop_args macro count
+pop_args macro
   pop word ptr [stack_arg_count]
   add sp, word ptr [stack_arg_count]
   endm

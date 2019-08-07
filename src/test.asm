@@ -1,6 +1,7 @@
 ;;; This file is just used for testing
 
 include std.asm
+include renderm.asm
 
   public testp
 
@@ -23,24 +24,35 @@ include std.asm
 
 testp proc near
 
+
   mov ah, 4
   mov al, 7
-
-  mov bh, 0
-  mov bl, 3
+  mov bh, 3
+  mov bl, 1
   call board_move
+
+  ;; mov ah, 4
+  ;; mov al, 0
+  ;; mov bh, 3
+  ;; mov bl, 6
+  ;; call board_move
+
+
+
 
   call draw_board
 
-  mov ah, 1
-  mov al, 1
-  mov bx, offset select_moves
-  call valid_moves
 
-  mov ah, 0
-  mov al, 3
-  mov bx, offset select_moves
-  call valid_moves
+
+  ;; mov ah, 1
+  ;; mov al, 1
+  ;; mov bx, offset select_moves
+  ;; call valid_moves
+
+  ;; mov ah, 0
+  ;; mov al, 3
+  ;; mov bx, offset select_moves
+  ;; call valid_moves
 
 
 

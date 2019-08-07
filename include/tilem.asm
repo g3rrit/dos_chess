@@ -16,12 +16,13 @@ tile_rook_w = 12
 tile_queen_w = 13
 tile_king_w = 14
 
-tile_indicator_hw = 15
-tile_indicator_hb = 16
-tile_indicator_vw = 17
-tile_indicator_vb = 18
+tile_black_wins = 15
+tile_white_wins = 16
+tile_press_exit = 17
 
 tile_empty_w = 7
 tile_empty_b = 8
-tile_empty_ws = 19
-tile_empty_bs = 20
+tile_empty_ws = 18
+tile_empty_bs = 19
+
+tile_exit = 20

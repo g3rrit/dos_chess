@@ -1,10 +1,12 @@
-  include std.asm
-  include tilem.asm
-  include boardm.asm
+include std.asm
+include tilem.asm
+include boardm.asm
+include renderm.asm
 
   public draw_rect
   public draw_filled_rect
   public draw_board
+  public draw_exit_button
 
   extrn tile_draw:proc
 
@@ -14,6 +16,17 @@
   .data
 
   .code
+
+draw_exit_button proc
+  entr 0
+
+  push_args<tile_exit, 0, 0>
+  call tile_draw
+  pop_args
+
+  leav
+  ret
+  endp
 
 switch_color macro
   local nblack, conn
@@ -28,6 +41,26 @@ nblack:
 conn:
   endm
 
+  color_black = 0ffh
+  color_white = 0
+
+draw_white_box macro x, y, w, h
+  save_reg
+  push_args<x, y, w, h, color_black, color_white>
+  call draw_filled_rect
+  pop_args
+  res_reg
+  endm
+
+draw_black_box macro x, y, w, h
+  save_reg
+  push_args<x, y, w, h, color_white, color_black>
+  call draw_filled_rect
+  pop_args
+  res_reg
+  endm
+
+
 ;;; draw the chessboard
 draw_board proc near
   entr 0
@@ -40,41 +73,27 @@ draw_board proc near
   jne @@player_black
 
 @@player_white:
-  mov bh, tile_indicator_hw
-  mov bl, tile_indicator_vw
+  draw_white_box board_xpos, <board_ypos - 10>, board_width, 10
+  draw_white_box board_xpos, <board_ypos + board_height>, board_width, 10
+  draw_white_box <board_xpos - 10>, board_ypos, 10, board_height
+  draw_white_box <board_xpos + board_width>, board_ypos, 10, board_height
+  draw_white_box <board_xpos - 10>, <board_ypos - 10>, 10, 10
+  draw_white_box <board_xpos + board_width>, <board_ypos - 10>, 10, 10
+  draw_white_box <board_xpos - 10>, <board_ypos + board_height>, 10, 10
+  draw_white_box <board_xpos + board_width>, <board_ypos + board_height>, 10, 10
 
   jmp @@done_player
 @@player_black:
-  mov bh, tile_indicator_hb
-  mov bl, tile_indicator_vb
+  draw_black_box board_xpos, <board_ypos - 10>, board_width, 10
+  draw_black_box board_xpos, <board_ypos + board_height>, board_width, 10
+  draw_black_box <board_xpos - 10>, board_ypos, 10, board_height
+  draw_black_box <board_xpos + board_width>, board_ypos, 10, board_height
+  draw_black_box <board_xpos - 10>, <board_ypos - 10>, 10, 10
+  draw_black_box <board_xpos + board_width>, <board_ypos - 10>, 10, 10
+  draw_black_box <board_xpos - 10>, <board_ypos + board_height>, 10, 10
+  draw_black_box <board_xpos + board_width>, <board_ypos + board_height>, 10, 10
 
 @@done_player:
-  xor ax, ax
-
-  mov al, bh
-  mov cx, board_xpos + (board_width / 2) - (indicator_l / 2)
-  mov dx, board_ypos - indicator_s
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
-  mov dx, board_ypos + board_height
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
-  mov al, bl
-  mov cx, board_xpos - indicator_s
-  mov dx, board_ypos + (board_height / 2) - (indicator_l / 2)
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
-  mov cx, board_xpos + board_width
-  push_args<ax, cx, dx>
-  call tile_draw
-  pop_args
-
   ;; ------------
 
   ;; draw board
@@ -274,9 +293,6 @@ h = bp + 6 + 4
 c = bp + 6 + 2
 cb = bp + 6
 
-  mov ax, vram
-  mov es, ax
-
   ;; move to left top corner
   mov ax, word ptr [y]
   mov bx, 320
@@ -300,14 +316,9 @@ cb = bp + 6
   dec bx
   jnz @@draw_v
 
-  push word ptr [x]
-  push word ptr [y]
-  push word ptr [w]
-  push word ptr [h]
-  push word ptr [cb]
-
+  push_args<word ptr [x], word ptr [y], word ptr [w], word ptr [h], word ptr [cb]>
   call draw_rect
-  pop_args 5
+  pop_args
 
   leav
   ret
