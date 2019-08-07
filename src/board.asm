@@ -522,8 +522,19 @@ board_set_pos proc near
 ;;;     ax: piece
 board_at proc near
   entr 0
+  cmp ah, 8
+  jnc @@invalid_pos
+  cmp al, 8
+  jnc @@invalid_pos
+
   board_xy_pos
   call board_at_pos
+
+  jmp @@done
+
+@@invalid_pos:
+  mov ax, 0ffffh
+@@done:
   leav
   ret
   endp
