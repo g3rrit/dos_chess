@@ -1,7 +1,7 @@
 ;;; This file is just used for testing
+;;; it can be ignored in final build
 
 include std.asm
-include renderm.asm
 
   public testp
 

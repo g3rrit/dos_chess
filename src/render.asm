@@ -1,7 +1,6 @@
 include std.asm
 include tilem.asm
 include boardm.asm
-include renderm.asm
 
   public draw_rect
   public draw_filled_rect
@@ -20,29 +19,20 @@ include renderm.asm
 draw_exit_button proc
   entr 0
 
+  disable_cursor
+
   push_args<tile_exit, 0, 0>
   call tile_draw
   pop_args
+
+  enable_cursor
 
   leav
   ret
   endp
 
-switch_color macro
-  local nblack, conn
-  ;; set white or black
-  cmp bx, 8
-  jne nblack
-  ;; else
-  mov bx, 7
-  jmp conn
-nblack:
-  mov bx, 8
-conn:
-  endm
-
-  color_black = 0ffh
-  color_white = 0
+color_black = 0ffh
+color_white = 0
 
 draw_white_box macro x, y, w, h
   save_reg
@@ -323,5 +313,6 @@ cb = bp + 6
   leav
   ret
   endp
+
 
   end

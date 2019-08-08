@@ -1,4 +1,4 @@
-  include std.asm
+include std.asm
 
   public tileset_load
   public tile_draw
@@ -109,7 +109,7 @@ xp = bp + 6 + 10
   add ax, word ptr [x]
   add ax, word ptr [w]
   cmp ax, tileset_size
-  jg @@invalid_pos
+  jnc @@invalid_pos
 
   ;; check if position on screen is valid
   mov ax, word ptr [yp]
@@ -120,8 +120,7 @@ xp = bp + 6 + 10
   add ax, word ptr [w]
   mov bx, screen_size
   cmp ax, bx
-  ;; TODO: wtf
-  ;; jg @@invalid_pos
+  jnc @@invalid_pos
 
   ;; get starting position for screen
   mov ax, word ptr [yp]

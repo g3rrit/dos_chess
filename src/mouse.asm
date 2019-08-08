@@ -1,6 +1,6 @@
 ;;; This File basically creates an interface to a blocking mouse proc
 
-  include std.asm
+include std.asm
 
   public mouse_board_pos
   public mouse_pos

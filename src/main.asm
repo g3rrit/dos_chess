@@ -1,4 +1,4 @@
-  include std.asm
+include std.asm
 
   public txt_mode_flag
   public exitp

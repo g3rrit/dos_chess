@@ -1,10 +1,12 @@
 ;;; This file contains the main loop and
 ;;; procedures for handling all the state
 ;;; of the game being:
-;;;     choosing - the player is expected to left click the mouse on the board
-;;;                to declare the piece he wants to move
-;;;     selected - the player has selected a piece to move
-;;;     ai       - the player has selected the destination of the piece and its the ais turn
+;;;     choosing_white - the white player is expected to left click the mouse on the board
+;;;                      to declare the piece he wants to move
+;;;     selected_white - the white player has selected a piece to move
+;;;     choosing_black - the black player is expected to left click the mouse on the board
+;;;                      to declare the piece he wants to move
+;;;     selected_black - the black player has selected a piece to move
 ;;;     done     - the game has concluded
 ;;;     end      - the game returns to main waiting for player to press any key to close the program
 ;;;
@@ -12,7 +14,6 @@
 
 include std.asm
 include boardm.asm
-include renderm.asm
 include tilem.asm
 
   public main_loop
@@ -396,5 +397,6 @@ selected_state_black proc near
   leav
   ret
   endp
+
 
   end
