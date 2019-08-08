@@ -237,6 +237,7 @@ clear_flag3 proc near
 set_flag proc near
   push ax
   push cx
+  push bx
   mov cx, ax
   call board_at
   cmp ax, 0ffffh
@@ -248,6 +249,7 @@ set_flag proc near
   call board_set
 
 @@done:
+  pop bx
   pop cx
   pop ax
   ret
@@ -260,6 +262,7 @@ set_flag proc near
 unset_flag proc near
   push ax
   push cx
+  push bx
   mov cx, ax
   call board_at
   cmp ax, 0ffffh
@@ -272,6 +275,7 @@ unset_flag proc near
   call board_set
 
 @@done:
+  pop bx
   pop cx
   pop ax
   ret
@@ -347,6 +351,7 @@ get_player proc near
 ;;; initializes board
 board_init proc near
   entr 0
+  push bx
 
   mov bx, offset board
   mov word ptr [bx],     0a0ch
@@ -384,6 +389,7 @@ board_init proc near
   mov word ptr [bx + 60], 0306h
   mov word ptr [bx + 62], 0402h
 
+  pop bx
   leav
   ret
   endp
@@ -490,10 +496,8 @@ board_at_pos proc near
 ;;;     bx: new value
 board_set_pos proc near
   entr 0
+  push ax
   push bx
-
-  cmp ax, 64
-  jnc @@invalid_pos
 
   push ax
   mov ax, bx
@@ -505,12 +509,7 @@ board_set_pos proc near
   mov byte ptr [bx], al
 
   pop bx
-  leav
-  ret
-
- @@invalid_pos:
-  mov ax, 0ffffh
-  pop bx
+  pop ax
   leav
   ret
   endp
@@ -545,19 +544,10 @@ board_at proc near
 ;;;     bx: value
 board_set proc near
   entr 0
-  cmp ah, 8
-  jnc @@invalid_pos
-  cmp al, 8
-  jnc @@invalid_pos
 
   board_xy_pos
   call board_set_pos
 
-  jmp @@done
-
-@@invalid_pos:
-  mov ax, 0ffffh
-@@done:
   leav
   ret
   endp
