@@ -16,7 +16,7 @@ include boardm.asm
 
   .code
 
-draw_exit_button proc
+draw_exit_button proc near
   entr 0
 
   disable_cursor
